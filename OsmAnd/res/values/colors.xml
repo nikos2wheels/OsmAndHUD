@@ -51,7 +51,7 @@
 	<color name="HUD_nav_arrow_distant">#000000</color>
 	<color name="HUD_nav_arrow">#FFFFFF</color>
 	<color name="HUD_nav_arrow_stroke_color">#FFFFFF</color>
-	<color name="HUD_nav_arrow_imminent">#000000</color>
+	<color name="HUD_nav_arrow_imminent">#FFFFFF</color>
 
 	<color name="map_button_background_color_light">#FFFFFF</color>
 	<color name="map_button_background_color_dark">#000000</color>
