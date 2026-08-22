@@ -469,12 +469,12 @@ public class TurnPathHelper {
 
 	public static class RouteDrawable extends Drawable {
 
-		protected Paint paintRouteDirection;
-		protected Paint paintRouteDirectionOutlay;
-		protected Path p = new Path();
-		protected Path dp = new Path();
-		protected Path pOutlay = new Path();
-		protected Path dpOutlay = new Path();
+		Paint paintRouteDirection;
+		Paint paintRouteDirectionOutlay;
+		Path p = new Path();
+		Path dp = new Path();
+		Path pOutlay = new Path();
+		Path dpOutlay = new Path();
 		private final boolean mini;
 
 		public RouteDrawable(@NonNull Context ctx, boolean mini) {

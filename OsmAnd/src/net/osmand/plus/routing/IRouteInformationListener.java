@@ -9,6 +9,4 @@ public interface IRouteInformationListener {
 	void routeWasCancelled();
 
 	void routeWasFinished();
-
-	void followingModeChanged(boolean following);
 }

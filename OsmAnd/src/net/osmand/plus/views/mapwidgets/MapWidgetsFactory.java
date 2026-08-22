@@ -48,8 +48,6 @@ public class MapWidgetsFactory {
 				return new MapMarkersBarWidget(mapActivity, customId, panel);
 			case LANES:
 				return new LanesWidget(mapActivity, customId, panel);
-			case HUD_LANE_GUIDANCE:
-				return new HudLaneGuidanceWidget(mapActivity, customId, panel);
 			case ROUTE_INFO:
 				return new RouteInfoWidget(mapActivity, customId, panel);
 			case DISTANCE_TO_DESTINATION:

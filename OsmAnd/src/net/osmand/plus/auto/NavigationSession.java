@@ -496,10 +496,6 @@ public class NavigationSession extends Session implements NavigationListener, Os
 		screenManager.push(new DestinationReachedScreen(carContext));
 	}
 
-	@Override
-	public void followingModeChanged(boolean following) {
-	}
-
 	private boolean isRoutePreviewPresent() {
 		ScreenManager screenManager = getCarContext().getCarService(ScreenManager.class);
 		Collection<Screen> displayedScreens = screenManager.getScreenStack();

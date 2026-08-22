@@ -18,7 +18,6 @@ import net.osmand.core.android.MapRendererView;
 import net.osmand.core.jni.MapMarkerBuilder;
 import net.osmand.core.jni.MapMarkersCollection;
 import net.osmand.core.jni.PointI;
-import net.osmand.core.jni.VectorLinesCollection;
 import net.osmand.data.LatLon;
 import net.osmand.data.PointDescription;
 import net.osmand.data.QuadRect;
@@ -41,7 +40,6 @@ import net.osmand.plus.views.layers.geometry.PublicTransportGeometryWayContext;
 import net.osmand.plus.views.layers.geometry.RouteGeometryWay;
 import net.osmand.plus.views.layers.geometry.RouteGeometryWayContext;
 import net.osmand.router.TransportRouteResult;
-import net.osmand.router.RouteSegmentResult;
 import net.osmand.shared.routing.ColoringType;
 import net.osmand.util.Algorithms;
 import net.osmand.util.MapUtils;
@@ -49,10 +47,8 @@ import net.osmand.util.MapUtils;
 import org.apache.commons.logging.Log;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 public class RouteLayer extends BaseRouteLayer implements IContextMenuProvider {
 
@@ -89,8 +85,6 @@ public class RouteLayer extends BaseRouteLayer implements IContextMenuProvider {
 	private List<LatLon> xAxisPointsCached = new ArrayList<>();
 	private MapMarkersCollection projectionPointCollection;
 	private net.osmand.core.jni.MapMarker projectedPointMarker;
-
-	private VectorLinesCollection spotlightLinesCollection;
 
 	private interface ConditionMatcher {
 		boolean match();
@@ -763,325 +757,13 @@ public class RouteLayer extends BaseRouteLayer implements IContextMenuProvider {
 		return p;
 	}
 
-	private final Paint roadPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-
 	@Override
 	public void onDraw(Canvas canvas, RotatedTileBox tileBox, DrawSettings settings) {
-		OsmandSettings s = getApplication().getSettings();
-		if (s.SPOTLIGHT_NAVIGATION.get() && helper.isRouteCalculated()) {
-			MapRendererView mapRenderer = getMapRenderer();
-			if (mapRenderer != null) {
-				// We rely on HUD.render.xml to provide the black background and route line.
-				updateSpotlightNative(mapRenderer);
-			} else {
-				canvas.drawColor(Color.BLACK);
-				drawIntersectingRoads(canvas, tileBox);
-				drawRouteLine(canvas, tileBox);
-			}
-		} else {
-			MapRendererView mapRenderer = getMapRenderer();
-			if (mapRenderer != null && spotlightLinesCollection != null) {
-				mapRenderer.removeSymbolsProvider(spotlightLinesCollection);
-				spotlightLinesCollection = null;
-			}
-		}
-	}
-
-	private void updateSpotlightNative(MapRendererView mapRenderer) {
-		RouteCalculationResult route = helper.getRoute();
-		List<RouteSegmentResult> segments = route.getOriginalRoute();
-		if (segments == null) return;
-
-		if (spotlightLinesCollection == null) {
-			spotlightLinesCollection = new VectorLinesCollection();
-		}
-
-		net.osmand.core.jni.QListVectorLine lines = spotlightLinesCollection.getLines();
-		int lineIdx = 0;
-		int baseOrder = getPointsOrder() - 100;
-
-		float radiusMeters = getApplication().getSettings().INTERSECTING_ROADS_RADIUS.get();
-		float thickness = getApplication().getSettings().INTERSECTING_ROADS_THICKNESS.get() * getContext().getResources().getDisplayMetrics().density;
-		int color = getApplication().getSettings().INTERSECTING_ROADS_COLOR.get();
-		boolean maneuverOnly = getApplication().getSettings().SPOTLIGHT_ACTION_POINTS_ONLY.get();
-		int currentRouteIdx = route.getCurrentRoute();
-
-		boolean filterEnabled = getApplication().getSettings().SPOTLIGHT_FILTER_ENABLED.get();
-		boolean filterTracks = getApplication().getSettings().SPOTLIGHT_FILTER_TRACKS.get();
-		boolean filterAccess = getApplication().getSettings().SPOTLIGHT_FILTER_ACCESS.get();
-		boolean filterLocal = getApplication().getSettings().SPOTLIGHT_FILTER_LOCAL.get();
-
-		Set<Integer> actionPointIndexes = null;
-		if (maneuverOnly) {
-			actionPointIndexes = new HashSet<>();
-			for (RouteDirectionInfo info : route.getImmutableAllDirections()) {
-				actionPointIndexes.add(info.routePointOffset);
-			}
-		}
-
-		int globalIdx = 0;
-		for (RouteSegmentResult segment : segments) {
-			int start = segment.getStartPointIndex();
-			int end = segment.getEndPointIndex();
-			boolean plus = start < end;
-			int count = Math.abs(end - start) + 1;
-
-			for (int i = 0; i < count; i++) {
-				int nodeIdx = start + (plus ? i : -i);
-				int currentGlobalIdx = globalIdx + i;
-
-				// Skip past junctions
-				if (currentGlobalIdx < currentRouteIdx) {
-					continue;
-				}
-
-				if (maneuverOnly && !actionPointIndexes.contains(currentGlobalIdx)) {
-					continue;
-				}
-
-				List<RouteSegmentResult> attached = segment.getAttachedRoutes(nodeIdx);
-				if (attached != null && !attached.isEmpty()) {
-					LatLon junction = segment.getPoint(nodeIdx);
-
-					for (RouteSegmentResult rs : attached) {
-						if (filterEnabled) {
-							String highway = rs.getObject().getHighway();
-							if (highway != null) {
-								if (filterTracks && (highway.equals("track") || highway.equals("path") || highway.equals("footway") || highway.equals("cycleway"))) {
-									continue;
-								}
-								if (filterAccess && highway.equals("service")) {
-									continue;
-								}
-								if (filterLocal && (highway.equals("residential") || highway.equals("living_street") || highway.equals("unclassified"))) {
-									continue;
-								}
-							}
-						}
-						// 1. Find the index of the junction point in the attached road
-						int rsStart = rs.getStartPointIndex();
-						int rsEnd = rs.getEndPointIndex();
-						int rsCount = Math.abs(rsEnd - rsStart) + 1;
-						int junctionIdxInRS = -1;
-						
-						for (int k = 0; k < rsCount; k++) {
-							int idx = rsStart + (rsStart < rsEnd ? k : -k);
-							if (MapUtils.areLatLonEqual(junction.getLatitude(), junction.getLongitude(), 
-									rs.getPoint(idx).getLatitude(), rs.getPoint(idx).getLongitude())) {
-								junctionIdxInRS = idx;
-								break;
-							}
-						}
-
-						if (junctionIdxInRS == -1) continue;
-
-						// 2. Trace in both directions from junction up to radius
-						for (int direction : new int[]{-1, 1}) {
-							net.osmand.core.jni.QVectorPointI points = new net.osmand.core.jni.QVectorPointI();
-							points.add(new net.osmand.core.jni.PointI(
-									MapUtils.get31TileNumberX(junction.getLongitude()),
-									MapUtils.get31TileNumberY(junction.getLatitude())));
-
-							LatLon prevLoc = junction;
-							for (int k = 1; ; k++) {
-								int idx = junctionIdxInRS + k * direction;
-								if (idx < Math.min(rsStart, rsEnd) || idx > Math.max(rsStart, rsEnd)) {
-									break;
-								}
-								
-								LatLon loc = rs.getPoint(idx);
-								double dist = MapUtils.getDistance(junction, loc);
-								if (dist <= radiusMeters) {
-									points.add(new net.osmand.core.jni.PointI(
-											MapUtils.get31TileNumberX(loc.getLongitude()),
-											MapUtils.get31TileNumberY(loc.getLatitude())));
-									prevLoc = loc;
-								} else {
-									double segmentDist = MapUtils.getDistance(prevLoc, loc);
-									if (segmentDist > 0) {
-										double factor = (radiusMeters - MapUtils.getDistance(junction, prevLoc)) / segmentDist;
-										if (factor > 0 && factor < 1) {
-											double lat = prevLoc.getLatitude() + (loc.getLatitude() - prevLoc.getLatitude()) * factor;
-											double lon = prevLoc.getLongitude() + (loc.getLongitude() - prevLoc.getLongitude()) * factor;
-											points.add(new net.osmand.core.jni.PointI(
-													MapUtils.get31TileNumberX(lon),
-													MapUtils.get31TileNumberY(lat)));
-										}
-									}
-									break;
-								}
-							}
-
-							if (points.size() > 1) {
-								if (lineIdx < lines.size()) {
-									net.osmand.core.jni.VectorLine vl = lines.get(lineIdx);
-									vl.setPoints(points);
-									vl.setIsHidden(false);
-									vl.setLineWidth(thickness);
-									vl.setFillColor(NativeUtilities.createFColorARGB(color));
-								} else {
-									net.osmand.core.jni.VectorLineBuilder builder = new net.osmand.core.jni.VectorLineBuilder();
-									builder.setPoints(points)
-											.setBaseOrder(baseOrder)
-											.setLineWidth(thickness)
-											.setFillColor(NativeUtilities.createFColorARGB(color))
-											.setIsHidden(false);
-									builder.buildAndAddToCollection(spotlightLinesCollection);
-								}
-								lineIdx++;
-							}
-						}
-					}
-				}
-			}
-			globalIdx += count - 1;
-		}
-
-		for (int i = lineIdx; i < lines.size(); i++) {
-			lines.get(i).setIsHidden(true);
-		}
-
-		if (!mapRenderer.hasSymbolsProvider(spotlightLinesCollection)) {
-			mapRenderer.addSymbolsProvider(spotlightLinesCollection);
-		}
-	}
-
-	private void setSpotlightNavigation(MapRendererView mapRenderer, boolean on) {
-	}
-
-	private void drawRouteLine(Canvas canvas, RotatedTileBox tileBox) {
-		List<Location> locations = helper.getRoute().getImmutableAllLocations();
-		if (locations.isEmpty()) return;
-
-		Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
-		p.setStyle(Paint.Style.STROKE);
-		// Use the standard yellow route color
-		p.setColor(getRouteLineColor());
-		p.setStrokeWidth((float) getRouteLineWidth(tileBox));
-		p.setStrokeCap(Cap.ROUND);
-		p.setStrokeJoin(Paint.Join.ROUND);
-
-		Path path = new Path();
-		boolean first = true;
-		for (Location loc : locations) {
-			float x = tileBox.getPixXFromLatLon(loc.getLatitude(), loc.getLongitude());
-			float y = tileBox.getPixYFromLatLon(loc.getLatitude(), loc.getLongitude());
-			if (first) {
-				path.moveTo(x, y);
-				first = false;
-			} else {
-				path.lineTo(x, y);
-			}
-		}
-		canvas.drawPath(path, p);
-	}
-
-	private void drawIntersectingRoads(Canvas canvas, RotatedTileBox tileBox) {
-		RouteCalculationResult route = helper.getRoute();
-		List<RouteSegmentResult> segments = route.getOriginalRoute();
-		if (segments == null) return;
-
-		float thickness = getApplication().getSettings().INTERSECTING_ROADS_THICKNESS.get() * getContext().getResources().getDisplayMetrics().density;
-		int color = getApplication().getSettings().INTERSECTING_ROADS_COLOR.get();
-		roadPaint.setStyle(Paint.Style.STROKE);
-		roadPaint.setColor(color);
-		roadPaint.setStrokeWidth(thickness);
-		roadPaint.setStrokeCap(Cap.ROUND);
-		roadPaint.setStrokeJoin(Paint.Join.ROUND);
-
-		float radiusMeters = getApplication().getSettings().INTERSECTING_ROADS_RADIUS.get();
-		boolean maneuverOnly = getApplication().getSettings().SPOTLIGHT_ACTION_POINTS_ONLY.get();
-		int currentRouteIdx = route.getCurrentRoute();
-
-		java.util.Set<Integer> actionPointIndexes = null;
-		if (maneuverOnly) {
-			actionPointIndexes = new java.util.HashSet<>();
-			for (RouteDirectionInfo info : route.getImmutableAllDirections()) {
-				actionPointIndexes.add(info.routePointOffset);
-			}
-		}
-
-		int globalIdx = 0;
-		for (RouteSegmentResult segment : segments) {
-			int start = segment.getStartPointIndex();
-			int end = segment.getEndPointIndex();
-			boolean plus = start < end;
-			int count = Math.abs(end - start) + 1;
-
-			for (int i = 0; i < count; i++) {
-				int nodeIdx = start + (plus ? i : -i);
-				int currentGlobalIdx = globalIdx + i;
-
-				// Skip past junctions
-				if (currentGlobalIdx < currentRouteIdx) {
-					continue;
-				}
-
-				if (maneuverOnly && !actionPointIndexes.contains(currentGlobalIdx)) {
-					continue;
-				}
-
-				List<RouteSegmentResult> attached = segment.getAttachedRoutes(nodeIdx);
-				if (attached != null && !attached.isEmpty()) {
-					LatLon junction = segment.getPoint(nodeIdx);
-
-					for (RouteSegmentResult rs : attached) {
-						int rsStart = rs.getStartPointIndex();
-						int rsEnd = rs.getEndPointIndex();
-						int rsCount = Math.abs(rsEnd - rsStart) + 1;
-						int jIdx = -1;
-						for (int k = 0; k < rsCount; k++) {
-							int idx = rsStart + (rsStart < rsEnd ? k : -k);
-							if (MapUtils.areLatLonEqual(junction.getLatitude(), junction.getLongitude(), 
-									rs.getPoint(idx).getLatitude(), rs.getPoint(idx).getLongitude())) {
-								jIdx = idx;
-								break;
-							}
-						}
-						if (jIdx == -1) continue;
-
-						float x = tileBox.getPixXFromLatLon(junction.getLatitude(), junction.getLongitude());
-						float y = tileBox.getPixYFromLatLon(junction.getLatitude(), junction.getLongitude());
-						float radiusPx = (float) (radiusMeters * tileBox.getPixDensity());
-
-						canvas.save();
-						Path circlePath = new Path();
-						circlePath.addCircle(x, y, radiusPx, Path.Direction.CW);
-						canvas.clipPath(circlePath);
-
-						drawAttachedSegment(canvas, tileBox, rs);
-						canvas.restore();
-					}
-				}
-			}
-			globalIdx += count - 1;
-		}
-	}
-
-	private void drawAttachedSegment(Canvas canvas, RotatedTileBox tileBox, RouteSegmentResult rs) {
-		Path path = new Path();
-		boolean first = true;
-		int start = rs.getStartPointIndex();
-		int end = rs.getEndPointIndex();
-		int count = Math.abs(end - start) + 1;
-		for (int i = 0; i < count; i++) {
-			int idx = start + (start < end ? i : -i);
-			LatLon loc = rs.getPoint(idx);
-			float x = tileBox.getPixXFromLatLon(loc.getLatitude(), loc.getLongitude());
-			float y = tileBox.getPixYFromLatLon(loc.getLatitude(), loc.getLongitude());
-			if (first) {
-				path.moveTo(x, y);
-				first = false;
-			} else {
-				path.lineTo(x, y);
-			}
-		}
-		canvas.drawPath(path, roadPaint);
 	}
 
 	@Override
 	public boolean drawInScreenPixels() {
-		return true;
+		return false;
 	}
 
 	@Override

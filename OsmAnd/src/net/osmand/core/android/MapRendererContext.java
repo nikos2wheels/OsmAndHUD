@@ -215,9 +215,6 @@ public class MapRendererContext {
 
 		loadRendererAddons();
 		String rendName = settings.RENDERER.get();
-		if (settings.HUD_MAP_STYLE.get() && app.getRoutingHelper().isFollowingMode()) {
-			rendName = RendererRegistry.HUD_RENDER;
-		}
 		if (rendName.length() == 0 || rendName.equals(RendererRegistry.DEFAULT_RENDER)) {
 			rendName = "default";
 		}

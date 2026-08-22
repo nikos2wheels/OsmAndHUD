@@ -148,14 +148,9 @@ import org.apache.commons.logging.Log;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import net.osmand.plus.activities.GoogleMapsIntentHandler;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import net.osmand.plus.activities.GoogleMapsIntentHandler;
-
-import net.osmand.plus.activities.GoogleMapsIntentHandler;
 
 public class MapActivity extends OsmandActionBarActivity implements DownloadEvents,
 		IRouteInformationListener, AMapPointUpdateListener, MapMarkerChangedListener,
@@ -229,12 +224,6 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 			});
 		}
 	};
-	private final net.osmand.StateChangedListener<Boolean> hudMapStyleListener = newValue -> app.runInUIThread(this::checkHudStyle);
-	private final net.osmand.StateChangedListener spotlightSettingsListener = newValue -> app.runInUIThread(() -> {
-		if (getMapView() != null) {
-			getMapView().refreshMap();
-		}
-	});
 	private KeyEventHelper keyEventHelper;
 	private RouteCalculationProgressListener routeCalculationProgressCallback;
 	private TransportRouteCalculationProgressCallback transportRouteCalculationProgressCallback;
@@ -257,17 +246,6 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		mapContextMenu.setMapActivity(this);
 		mapRouteInfoMenu.setMapActivity(this);
 		trackDetailsMenu.setMapActivity(this);
-
-		settings.HUD_MAP_STYLE.addListener(hudMapStyleListener);
-		settings.SPOTLIGHT_NAVIGATION.addListener(spotlightSettingsListener);
-		settings.INTERSECTING_ROADS_RADIUS.addListener(spotlightSettingsListener);
-		settings.INTERSECTING_ROADS_THICKNESS.addListener(spotlightSettingsListener);
-		settings.INTERSECTING_ROADS_COLOR.addListener(spotlightSettingsListener);
-		settings.SPOTLIGHT_ACTION_POINTS_ONLY.addListener(spotlightSettingsListener);
-		settings.SPOTLIGHT_FILTER_ENABLED.addListener(spotlightSettingsListener);
-		settings.SPOTLIGHT_FILTER_TRACKS.addListener(spotlightSettingsListener);
-		settings.SPOTLIGHT_FILTER_ACCESS.addListener(spotlightSettingsListener);
-		settings.SPOTLIGHT_FILTER_LOCAL.addListener(spotlightSettingsListener);
 
 		setContentView(R.layout.main);
 		enterToFullScreen();
@@ -359,15 +337,6 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 			mapViewWithLayers.onCreate(savedInstanceState);
 		}
 		extendedMapActivity.onCreate(this, savedInstanceState);
-		
-		Intent intent = getIntent();
-		if (isGoogleMapsIntent(intent)) {
-			GoogleMapsIntentHandler.handleIncomingMapIntent(this, intent);
-		} else {
-			if (intentHelper != null) {
-				intentHelper.parseLaunchIntents();
-			}
-		}
 	}
 
 	public void setMapViewPaddings(int left, int top, int right, int bottom) {
@@ -553,12 +522,8 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		setIntent(intent);
 
 		importHelper.setUiActivity(this);
-		if (isGoogleMapsIntent(intent)) {
-			GoogleMapsIntentHandler.handleIncomingMapIntent(this, intent);
-		} else {
-			if (!intentHelper.parseLaunchIntents()) {
-				intentHelper.parseContentIntent();
-			}
+		if (!intentHelper.parseLaunchIntents()) {
+			intentHelper.parseContentIntent();
 		}
 	}
 
@@ -866,18 +831,6 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		}
 	}
 
-	private boolean isGoogleMapsIntent(Intent intent) {
-		if (intent == null) return false;
-		String sharedText = null;
-		if (Intent.ACTION_SEND.equals(intent.getAction())) {
-			sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
-		} else if (Intent.ACTION_VIEW.equals(intent.getAction())) {
-			sharedText = intent.getDataString();
-		}
-		if (sharedText == null) return false;
-		return sharedText.contains("maps.google.com") || sharedText.contains("goo.gl/maps") || sharedText.contains("maps.app.goo.gl");
-	}
-
 	@Override
 	public void updateStatusBarColor() {
 		UiUtilities.updateSystemBarColors(this);
@@ -1097,16 +1050,6 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		unregisterReceiver(screenOffReceiver);
 		app.getAidlApi().onDestroyMapActivity(this);
 		app.getImportHelper().resetUIActivity(this);
-		settings.HUD_MAP_STYLE.removeListener(hudMapStyleListener);
-		settings.SPOTLIGHT_NAVIGATION.removeListener(spotlightSettingsListener);
-		settings.INTERSECTING_ROADS_RADIUS.removeListener(spotlightSettingsListener);
-		settings.INTERSECTING_ROADS_THICKNESS.removeListener(spotlightSettingsListener);
-		settings.INTERSECTING_ROADS_COLOR.removeListener(spotlightSettingsListener);
-		settings.SPOTLIGHT_ACTION_POINTS_ONLY.removeListener(spotlightSettingsListener);
-		settings.SPOTLIGHT_FILTER_ENABLED.removeListener(spotlightSettingsListener);
-		settings.SPOTLIGHT_FILTER_TRACKS.removeListener(spotlightSettingsListener);
-		settings.SPOTLIGHT_FILTER_ACCESS.removeListener(spotlightSettingsListener);
-		settings.SPOTLIGHT_FILTER_LOCAL.removeListener(spotlightSettingsListener);
 		PluginsHelper.onMapActivityDestroy(this);
 		app.unsubscribeInitListener(initListener);
 		NavigationSession carNavigationSession = app.getCarNavigationSession();
@@ -1696,7 +1639,6 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 
 	@Override
 	public void newRouteIsCalculated(boolean newRoute, ValueHolder<Boolean> showToast) {
-		checkHudStyle();
 		if (mapRouteInfoMenu.isSelectFromMap()) {
 			return;
 		}
@@ -1739,13 +1681,11 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 
 	@Override
 	public void routeWasCancelled() {
-		checkHudStyle();
 		changeKeyguardFlags();
 	}
 
 	@Override
 	public void routeWasFinished() {
-		checkHudStyle();
 		if (!mIsDestroyed) {
 			DestinationReachedFragment.show(this);
 			changeKeyguardFlags();
@@ -1826,16 +1766,5 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 	@Override
 	public void onInAppPurchaseItemPurchased(String sku) {
 		getMapLayers().getRouteLayer().resetColorAvailabilityCache();
-	}
-
-	private void checkHudStyle() {
-		if (settings.HUD_MAP_STYLE.get()) {
-			updateMapSettings(true);
-		}
-	}
-
-	@Override
-	public void followingModeChanged(boolean following) {
-		checkHudStyle();
 	}
 }

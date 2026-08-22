@@ -2423,10 +2423,6 @@ public class MapRouteInfoMenu implements IRouteInformationListener, CardListener
 	public void routeWasFinished() {
 	}
 
-	@Override
-	public void followingModeChanged(boolean following) {
-	}
-
 	public void onResume() {
 		OsmandApplication app = getApp();
 		if (app != null) {

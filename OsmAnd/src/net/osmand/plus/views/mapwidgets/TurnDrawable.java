@@ -34,7 +34,7 @@ public class TurnDrawable extends Drawable {
 	protected TurnType turnType;
 	protected int turnImminent;
 	protected boolean deviatedFromRoute;
-	protected final Context ctx;
+	private final Context ctx;
 	private final boolean mini;
 	private final PointF centerText;
 	private TextPaint textPaint;

@@ -1480,22 +1480,6 @@ public class OsmandSettings {
 
 	public final OsmandPreference<Boolean> MAP_EMPTY_STATE_ALLOWED = new BooleanPreference(this, "map_empty_state_allowed", false).makeProfile().cache();
 
-	public final CommonPreference<Boolean> HUD_MAP_STYLE = registerBooleanPreference("hud_map_style", false).makeProfile();
-
-	public final CommonPreference<Boolean> SPOTLIGHT_NAVIGATION = registerBooleanPreference("spotlight_navigation", true).makeProfile();
-	public final CommonPreference<Integer> INTERSECTING_ROADS_RADIUS = registerIntPreference("intersecting_roads_radius", 50).makeProfile();
-	public final CommonPreference<Integer> INTERSECTING_ROADS_THICKNESS = registerIntPreference("intersecting_roads_thickness", 2).makeProfile();
-	public final CommonPreference<Integer> INTERSECTING_ROADS_COLOR = registerIntPreference("intersecting_roads_color", Color.WHITE).makeProfile();
-	public final CommonPreference<Boolean> SPOTLIGHT_ACTION_POINTS_ONLY = registerBooleanPreference("spotlight_action_points_only", false).makeProfile();
-
-	public final CommonPreference<Boolean> SPOTLIGHT_FILTER_ENABLED = registerBooleanPreference("spotlight_filter_enabled", false).makeProfile();
-	public final CommonPreference<Boolean> SPOTLIGHT_FILTER_TRACKS = registerBooleanPreference("spotlight_filter_tracks", false).makeProfile();
-	public final CommonPreference<Boolean> SPOTLIGHT_FILTER_ACCESS = registerBooleanPreference("spotlight_filter_access", false).makeProfile();
-	public final CommonPreference<Boolean> SPOTLIGHT_FILTER_LOCAL = registerBooleanPreference("spotlight_filter_local", false).makeProfile();
-
-	public final CommonPreference<Float> HUD_LANE_GUIDANCE_Y = registerFloatPreference("hud_lane_guidance_y", -1f).makeProfile();
-	public final CommonPreference<Float> HUD_LANE_GUIDANCE_Y_LANDSCAPE = registerFloatPreference("hud_lane_guidance_y_landscape", -1f).makeProfile();
-
 	public final OsmandPreference<Boolean> FIXED_NORTH_MAP = new BooleanPreference(this, "fix_north_map", false).makeProfile().cache();
 
 
@@ -1697,10 +1681,6 @@ public class OsmandSettings {
 	public final CommonPreference<Boolean> ENABLE_TIME_CONDITIONAL_ROUTING = new BooleanPreference(this, "enable_time_conditional_routing", true).makeProfile();
 
 	public final CommonPreference<Boolean> SHOW_MINOR_TURNS = new BooleanPreference(this, "show_minor_turns", true).makeProfile();
-
-	public final CommonPreference<Boolean> HUD_SHOW_MINOR_TURNS = new BooleanPreference(this, "hud_show_minor_turns", false).makeProfile();
-	public final CommonPreference<Boolean> HUD_SHOW_EXIT_NUMBERS = new BooleanPreference(this, "hud_show_exit_numbers", true).makeProfile();
-	public final CommonPreference<Boolean> HUD_SHOW_NEXT_TURN = new BooleanPreference(this, "hud_show_next_turn", true).makeProfile();
 
 	public boolean simulateNavigation;
 	public boolean simulateNavigationStartedFromAdb;

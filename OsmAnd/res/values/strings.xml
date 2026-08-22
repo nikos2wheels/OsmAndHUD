@@ -11,23 +11,6 @@
 	Strings for OsmAnd core
 	Thx - Hardy
 -->
-	<string name="hud_map_style">HUD style</string>
-	<string name="hud_map_style_descr">Enable Head-Up Display map style (black background and white route line) during navigation</string>
-	<string name="spotlight_navigation">Show only intersecting roads</string>
-	<string name="spotlight_navigation_descr">Display thin white lines for roads intersecting with your route</string>
-	<string name="intersecting_roads_maneuver_only">Only at route action points</string>
-	<string name="intersecting_roads_maneuver_only_descr">Show intersecting roads only at turns and maneuvers</string>
-	<string name="intersecting_roads_radius">Clipping radius</string>
-	<string name="intersecting_roads_thickness">Intersection line thickness</string>
-	<string name="intersecting_roads_color">Color of intersecting roads</string>
-	<string name="spotlight_filter_enabled">Do not show the following class of intersecting roads</string>
-	<string name="spotlight_filter_tracks">Tracks/Paths</string>
-	<string name="spotlight_filter_access">Access Roads</string>
-	<string name="spotlight_filter_local">Minor Local Roads</string>
-	<string name="hud_lane_guidance">HUD Lanes/Next Turn</string>
-	<string name="hud_lane_guidance_desc">Displays HUD Lane guidance and Next Turn arrows</string>
-	<string name="hud_show_exit_numbers">Show exit numbers</string>
-	<string name="hud_show_next_turn">Show next turn arrows</string>
 	<string name="share_favorites_media_preparation_failed">Couldn\'t include attached media. Sharing points only.</string>
 	<plurals name="files_count">
 		<item quantity="one">%d file</item>

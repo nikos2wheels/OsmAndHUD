@@ -451,10 +451,6 @@ public final class NavigationScreen extends BaseAndroidAutoScreen implements Sur
 	}
 
 	@Override
-	public void followingModeChanged(boolean following) {
-	}
-
-	@Override
 	public void onElevationChanging(float angle) {
 		boolean currentUse3DButton = use3DButton;
 		updateUse3DButton();

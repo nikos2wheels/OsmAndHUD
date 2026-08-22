@@ -76,7 +76,6 @@ public class MapHudLayout extends FrameLayout {
 	private VerticalWidgetPanel bottomWidgetsPanel;
 	private View layerParamLayout;
 	private View mapTransparencyLayout;
-	private View hudLaneGuidanceContainer;
 
 	private final float dpToPx;
 	private final int topButtonsMargin;
@@ -158,7 +157,6 @@ public class MapHudLayout extends FrameLayout {
 		bottomWidgetsPanel = findViewById(R.id.map_bottom_widgets_panel);
 		layerParamLayout = findViewById(R.id.layer_param_layout);
 		mapTransparencyLayout = findViewById(R.id.map_transparency_layout);
-		hudLaneGuidanceContainer = findViewById(R.id.hud_lane_guidance_container);
 
 		setupPositions();
 	}
@@ -371,9 +369,6 @@ public class MapHudLayout extends FrameLayout {
 
 		for (Map.Entry<View, ButtonPositionSize> entry : widgetPositions.entrySet()) {
 			View view = entry.getKey();
-			if (view == hudLaneGuidanceContainer) {
-				continue;
-			}
 			if (view.getVisibility() == VISIBLE) {
 				ButtonPositionSize position = updateWidgetPosition(view, entry.getValue());
 				if (position.getHeight() > 0 && position.getWidth() > 0) {
