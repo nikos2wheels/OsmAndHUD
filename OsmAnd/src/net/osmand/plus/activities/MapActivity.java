@@ -148,9 +148,14 @@ import org.apache.commons.logging.Log;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import net.osmand.plus.activities.GoogleMapsIntentHandler;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import net.osmand.plus.activities.GoogleMapsIntentHandler;
+
+import net.osmand.plus.activities.GoogleMapsIntentHandler;
 
 public class MapActivity extends OsmandActionBarActivity implements DownloadEvents,
 		IRouteInformationListener, AMapPointUpdateListener, MapMarkerChangedListener,
@@ -354,6 +359,15 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 			mapViewWithLayers.onCreate(savedInstanceState);
 		}
 		extendedMapActivity.onCreate(this, savedInstanceState);
+		
+		Intent intent = getIntent();
+		if (isGoogleMapsIntent(intent)) {
+			GoogleMapsIntentHandler.handleIncomingMapIntent(this, intent);
+		} else {
+			if (intentHelper != null) {
+				intentHelper.parseLaunchIntents();
+			}
+		}
 	}
 
 	public void setMapViewPaddings(int left, int top, int right, int bottom) {
@@ -539,8 +553,12 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		setIntent(intent);
 
 		importHelper.setUiActivity(this);
-		if (!intentHelper.parseLaunchIntents()) {
-			intentHelper.parseContentIntent();
+		if (isGoogleMapsIntent(intent)) {
+			GoogleMapsIntentHandler.handleIncomingMapIntent(this, intent);
+		} else {
+			if (!intentHelper.parseLaunchIntents()) {
+				intentHelper.parseContentIntent();
+			}
 		}
 	}
 
@@ -846,6 +864,18 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		if (mapViewWithLayers != null) {
 			mapViewWithLayers.setKeepScreenOn(keepScreenOn);
 		}
+	}
+
+	private boolean isGoogleMapsIntent(Intent intent) {
+		if (intent == null) return false;
+		String sharedText = null;
+		if (Intent.ACTION_SEND.equals(intent.getAction())) {
+			sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
+		} else if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+			sharedText = intent.getDataString();
+		}
+		if (sharedText == null) return false;
+		return sharedText.contains("maps.google.com") || sharedText.contains("goo.gl/maps") || sharedText.contains("maps.app.goo.gl");
 	}
 
 	@Override

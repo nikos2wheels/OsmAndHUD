@@ -569,6 +569,34 @@
 				<data android:mimeType="text/plain" />
 			</intent-filter>
 
+			<!-- 2. Handle Google Maps links clicked in other apps -->
+			<intent-filter android:autoVerify="true">
+				<action android:name="android.intent.action.VIEW" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<category android:name="android.intent.category.BROWSABLE" />
+
+				<data android:scheme="http" />
+				<data android:scheme="https" />
+				<data android:host="maps.google.com" />
+				<data android:host="www.google.com" android:pathPrefix="/maps" />
+				<data android:host="goo.gl" android:pathPrefix="/maps" />
+				<data android:host="maps.app.goo.gl" />
+			</intent-filter>
+
+			<!-- 2. Handle Google Maps links clicked in other apps -->
+			<intent-filter android:autoVerify="true">
+				<action android:name="android.intent.action.VIEW" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<category android:name="android.intent.category.BROWSABLE" />
+
+				<data android:scheme="http" />
+				<data android:scheme="https" />
+				<data android:host="maps.google.com" />
+				<data android:host="www.google.com" android:pathPrefix="/maps" />
+				<data android:host="goo.gl" android:pathPrefix="/maps" />
+				<data android:host="maps.app.goo.gl" />
+			</intent-filter>
+
 			<intent-filter>
 				<action android:name="android.intent.action.VIEW" />
 				<category android:name="android.intent.category.DEFAULT" />
