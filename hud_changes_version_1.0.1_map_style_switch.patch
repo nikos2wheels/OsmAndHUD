@@ -1,0 +1,388 @@
+diff --git a/OsmAnd/build.gradle b/OsmAnd/build.gradle
+index 538b652..7daf1ec 100644
+--- a/OsmAnd/build.gradle
++++ b/OsmAnd/build.gradle
+@@ -119,33 +119,33 @@ android {
+ 		// Version
+ 		nightlyFree {
+ 			dimension "version"
+-			applicationId "net.osmand.dev"
+-			resValue "string", "app_name", "OsmAnd Nightly"
++			applicationId "net.osmandHUD.dev"
++			resValue "string", "app_name", "OsmAnd Nightly HUD"
+ 			resValue "string", "app_edition", System.getenv("APP_EDITION") ? System.getenv("APP_EDITION") : ""
+ 			// resConfig "en"
+ 		}
+ 		androidFull {
+ 			dimension "version"
+-			applicationId "net.osmand.plus"
+-			resValue "string", "app_name", "OsmAnd~"
++			applicationId "net.osmandHUD.full"
++			resValue "string", "app_name", "OsmAndHUD~"
+ 			resValue "string", "app_edition", System.getenv("APP_EDITION") ? System.getenv("APP_EDITION") : ""
+ 		}
+ 		gplayFree {
+ 			dimension "version"
+-			applicationId "net.osmand"
+-			resValue "string", "app_name", "OsmAnd"
++			applicationId "net.osmandHUD"
++			resValue "string", "app_name", "OsmAndHUD"
+ 			resValue "string", "app_edition", System.getenv("APP_EDITION") ? System.getenv("APP_EDITION") : ""
+ 		}
+ 		gplayFull {
+ 			dimension "version"
+-			applicationId "net.osmand.plus"
+-			resValue "string", "app_name", "OsmAnd+"
++			applicationId "net.osmandHUD.plus"
++			resValue "string", "app_name", "OsmAndHUD+"
+ 			resValue "string", "app_edition", System.getenv("APP_EDITION") ? System.getenv("APP_EDITION") : ""
+ 		}
+ 		huawei {
+ 			dimension "version"
+-			applicationId "net.osmand.huawei"
+-			resValue "string", "app_name", "OsmAnd"
++			applicationId "net.osmandHUD.huawei"
++			resValue "string", "app_name", "OsmAndHUD"
+ 			resValue "string", "app_edition", ""
+ 		}
+ 
+diff --git a/OsmAnd/res/values/strings.xml b/OsmAnd/res/values/strings.xml
+index 1b98187..72943e0 100644
+--- a/OsmAnd/res/values/strings.xml
++++ b/OsmAnd/res/values/strings.xml
+@@ -11,6 +11,8 @@
+ 	Strings for OsmAnd core
+ 	Thx - Hardy
+ -->
++	<string name="hud_map_style">HUD style</string>
++	<string name="hud_map_style_descr">Enable Head-Up Display map style (black background and white route line) during navigation</string>
+ 	<string name="share_favorites_media_preparation_failed">Couldn\'t include attached media. Sharing points only.</string>
+ 	<plurals name="files_count">
+ 		<item quantity="one">%d file</item>
+diff --git a/OsmAnd/res/xml/map_during_navigation.xml b/OsmAnd/res/xml/map_during_navigation.xml
+index 7d0b639..847db99 100644
+--- a/OsmAnd/res/xml/map_during_navigation.xml
++++ b/OsmAnd/res/xml/map_during_navigation.xml
+@@ -8,6 +8,17 @@
+ 		android:selectable="false"
+ 		android:title="@string/map_during_navigation_info" />
+ 
++	<net.osmand.plus.settings.preferences.SwitchPreferenceEx
++		android:key="hud_map_style"
++		android:layout="@layout/preference_dialog_and_switch"
++		android:summaryOff="@string/shared_string_off"
++		android:summaryOn="@string/shared_string_on"
++		android:title="@string/hud_map_style" />
++
++	<Preference
++		android:layout="@layout/divider_half_item_with_background"
++		android:selectable="false" />
++
+ 	<net.osmand.plus.settings.preferences.ListPreferenceEx
+ 		android:key="auto_follow_route"
+ 		android:layout="@layout/preference_with_descr"
+diff --git a/OsmAnd/src/net/osmand/core/android/MapRendererContext.java b/OsmAnd/src/net/osmand/core/android/MapRendererContext.java
+index 2bbe7eb..03157c6 100644
+--- a/OsmAnd/src/net/osmand/core/android/MapRendererContext.java
++++ b/OsmAnd/src/net/osmand/core/android/MapRendererContext.java
+@@ -215,6 +215,9 @@ public class MapRendererContext {
+ 
+ 		loadRendererAddons();
+ 		String rendName = settings.RENDERER.get();
++		if (settings.HUD_MAP_STYLE.get() && app.getRoutingHelper().isFollowingMode()) {
++			rendName = RendererRegistry.HUD_RENDER;
++		}
+ 		if (rendName.length() == 0 || rendName.equals(RendererRegistry.DEFAULT_RENDER)) {
+ 			rendName = "default";
+ 		}
+diff --git a/OsmAnd/src/net/osmand/plus/activities/MapActivity.java b/OsmAnd/src/net/osmand/plus/activities/MapActivity.java
+index 1061cdf..ef7b622 100644
+--- a/OsmAnd/src/net/osmand/plus/activities/MapActivity.java
++++ b/OsmAnd/src/net/osmand/plus/activities/MapActivity.java
+@@ -224,6 +224,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
+ 			});
+ 		}
+ 	};
++	private final net.osmand.StateChangedListener<Boolean> hudMapStyleListener = newValue -> app.runInUIThread(this::checkHudStyle);
+ 	private KeyEventHelper keyEventHelper;
+ 	private RouteCalculationProgressListener routeCalculationProgressCallback;
+ 	private TransportRouteCalculationProgressCallback transportRouteCalculationProgressCallback;
+@@ -247,6 +248,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
+ 		mapRouteInfoMenu.setMapActivity(this);
+ 		trackDetailsMenu.setMapActivity(this);
+ 
++		settings.HUD_MAP_STYLE.addListener(hudMapStyleListener);
+ 		setContentView(R.layout.main);
+ 		enterToFullScreen();
+ 		// Navigation Drawer
+@@ -1050,6 +1052,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
+ 		unregisterReceiver(screenOffReceiver);
+ 		app.getAidlApi().onDestroyMapActivity(this);
+ 		app.getImportHelper().resetUIActivity(this);
++		settings.HUD_MAP_STYLE.removeListener(hudMapStyleListener);
+ 		PluginsHelper.onMapActivityDestroy(this);
+ 		app.unsubscribeInitListener(initListener);
+ 		NavigationSession carNavigationSession = app.getCarNavigationSession();
+@@ -1639,6 +1642,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
+ 
+ 	@Override
+ 	public void newRouteIsCalculated(boolean newRoute, ValueHolder<Boolean> showToast) {
++		checkHudStyle();
+ 		if (mapRouteInfoMenu.isSelectFromMap()) {
+ 			return;
+ 		}
+@@ -1681,11 +1685,13 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
+ 
+ 	@Override
+ 	public void routeWasCancelled() {
++		checkHudStyle();
+ 		changeKeyguardFlags();
+ 	}
+ 
+ 	@Override
+ 	public void routeWasFinished() {
++		checkHudStyle();
+ 		if (!mIsDestroyed) {
+ 			DestinationReachedFragment.show(this);
+ 			changeKeyguardFlags();
+@@ -1767,4 +1773,15 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
+ 	public void onInAppPurchaseItemPurchased(String sku) {
+ 		getMapLayers().getRouteLayer().resetColorAvailabilityCache();
+ 	}
++
++	private void checkHudStyle() {
++		if (settings.HUD_MAP_STYLE.get()) {
++			updateMapSettings(true);
++		}
++	}
++
++	@Override
++	public void followingModeChanged(boolean following) {
++		checkHudStyle();
++	}
+ }
+diff --git a/OsmAnd/src/net/osmand/plus/auto/NavigationSession.java b/OsmAnd/src/net/osmand/plus/auto/NavigationSession.java
+index 0415580..d357569 100644
+--- a/OsmAnd/src/net/osmand/plus/auto/NavigationSession.java
++++ b/OsmAnd/src/net/osmand/plus/auto/NavigationSession.java
+@@ -496,6 +496,10 @@ public class NavigationSession extends Session implements NavigationListener, Os
+ 		screenManager.push(new DestinationReachedScreen(carContext));
+ 	}
+ 
++	@Override
++	public void followingModeChanged(boolean following) {
++	}
++
+ 	private boolean isRoutePreviewPresent() {
+ 		ScreenManager screenManager = getCarContext().getCarService(ScreenManager.class);
+ 		Collection<Screen> displayedScreens = screenManager.getScreenStack();
+diff --git a/OsmAnd/src/net/osmand/plus/auto/screens/NavigationScreen.java b/OsmAnd/src/net/osmand/plus/auto/screens/NavigationScreen.java
+index 2c5ba81..a8c0007 100644
+--- a/OsmAnd/src/net/osmand/plus/auto/screens/NavigationScreen.java
++++ b/OsmAnd/src/net/osmand/plus/auto/screens/NavigationScreen.java
+@@ -450,6 +450,10 @@ public final class NavigationScreen extends BaseAndroidAutoScreen implements Sur
+ 	public void routeWasFinished() {
+ 	}
+ 
++	@Override
++	public void followingModeChanged(boolean following) {
++	}
++
+ 	@Override
+ 	public void onElevationChanging(float angle) {
+ 		boolean currentUse3DButton = use3DButton;
+diff --git a/OsmAnd/src/net/osmand/plus/auto/screens/RoutePreviewScreen.java b/OsmAnd/src/net/osmand/plus/auto/screens/RoutePreviewScreen.java
+index 6e1333e..2009a64 100644
+--- a/OsmAnd/src/net/osmand/plus/auto/screens/RoutePreviewScreen.java
++++ b/OsmAnd/src/net/osmand/plus/auto/screens/RoutePreviewScreen.java
+@@ -274,4 +274,8 @@ public final class RoutePreviewScreen extends BaseAndroidAutoScreen implements I
+ 	@Override
+ 	public void routeWasFinished() {
+ 	}
++
++	@Override
++	public void followingModeChanged(boolean following) {
++	}
+ }
+diff --git a/OsmAnd/src/net/osmand/plus/dashboard/DashboardOnMap.java b/OsmAnd/src/net/osmand/plus/dashboard/DashboardOnMap.java
+index 9dafb33..7ebc1f9 100644
+--- a/OsmAnd/src/net/osmand/plus/dashboard/DashboardOnMap.java
++++ b/OsmAnd/src/net/osmand/plus/dashboard/DashboardOnMap.java
+@@ -1324,4 +1324,8 @@ public class DashboardOnMap implements ObservableScrollViewCallbacks, IRouteInfo
+ 	@Override
+ 	public void routeWasFinished() {
+ 	}
++
++	@Override
++	public void followingModeChanged(boolean following) {
++	}
+ }
+diff --git a/OsmAnd/src/net/osmand/plus/plugins/monitoring/SavingTrackHelper.java b/OsmAnd/src/net/osmand/plus/plugins/monitoring/SavingTrackHelper.java
+index 9c73ec6..6802e17 100644
+--- a/OsmAnd/src/net/osmand/plus/plugins/monitoring/SavingTrackHelper.java
++++ b/OsmAnd/src/net/osmand/plus/plugins/monitoring/SavingTrackHelper.java
+@@ -926,4 +926,7 @@ public class SavingTrackHelper extends SQLiteOpenHelper implements IRouteInforma
+ 		shouldAutomaticallyRecord = true;
+ 	}
+ 
++	@Override
++	public void followingModeChanged(boolean following) {
++	}
+ }
+diff --git a/OsmAnd/src/net/osmand/plus/render/RendererRegistry.java b/OsmAnd/src/net/osmand/plus/render/RendererRegistry.java
+index 8258c72..207706a 100644
+--- a/OsmAnd/src/net/osmand/plus/render/RendererRegistry.java
++++ b/OsmAnd/src/net/osmand/plus/render/RendererRegistry.java
+@@ -57,6 +57,7 @@ public class RendererRegistry {
+ 	public static final String ROUTES_RENDER = "Routes";
+ 	public static final String OSMASSISTANT_RENDER = "OSM Assistant";
+ 	public static final String PUBLICTRANSPORTROUTES_RENDER = "Public transport routes";
++	public static final String HUD_RENDER = "Hud";
+ 
+ 	public static boolean IGNORE_CACHED_STYLES = false; // enable to overwrite RENDERERS_DIR styles (debug)
+ 
+@@ -100,6 +101,7 @@ public class RendererRegistry {
+ 		internalRenderers.put(ROUTES_RENDER, "routes" + ADDON_RENDERER_INDEX_EXT);
+ 		internalRenderers.put(OSMASSISTANT_RENDER, "osmassistant" + ADDON_RENDERER_INDEX_EXT);
+ 		internalRenderers.put(PUBLICTRANSPORTROUTES_RENDER, "publictransportroutes" + ADDON_RENDERER_INDEX_EXT);
++		internalRenderers.put(HUD_RENDER, HUD_RENDER + RENDERER_INDEX_EXT);
+ 	}
+ 
+ 	@Nullable
+diff --git a/OsmAnd/src/net/osmand/plus/render/UpdateRendererAsyncTask.java b/OsmAnd/src/net/osmand/plus/render/UpdateRendererAsyncTask.java
+index 8617e2a..71655fa 100644
+--- a/OsmAnd/src/net/osmand/plus/render/UpdateRendererAsyncTask.java
++++ b/OsmAnd/src/net/osmand/plus/render/UpdateRendererAsyncTask.java
+@@ -33,7 +33,11 @@ public class UpdateRendererAsyncTask extends AsyncTask<Void, Void, Boolean> {
+ 		RendererRegistry registry = app.getRendererRegistry();
+ 		OsmandMapTileView mapView = app.getOsmandMap().getMapView();
+ 
+-		RenderingRulesStorage newRenderer = registry.getRenderer(settings.RENDERER.get());
++		String rendName = settings.RENDERER.get();
++		if (settings.HUD_MAP_STYLE.get() && app.getRoutingHelper().isFollowingMode()) {
++			rendName = RendererRegistry.HUD_RENDER;
++		}
++		RenderingRulesStorage newRenderer = registry.getRenderer(rendName);
+ 		if (newRenderer == null) {
+ 			newRenderer = registry.defaultRender();
+ 		}
+diff --git a/OsmAnd/src/net/osmand/plus/routepreparationmenu/MapRouteInfoMenu.java b/OsmAnd/src/net/osmand/plus/routepreparationmenu/MapRouteInfoMenu.java
+index 3469a99..848ea1c 100644
+--- a/OsmAnd/src/net/osmand/plus/routepreparationmenu/MapRouteInfoMenu.java
++++ b/OsmAnd/src/net/osmand/plus/routepreparationmenu/MapRouteInfoMenu.java
+@@ -2423,6 +2423,10 @@ public class MapRouteInfoMenu implements IRouteInformationListener, CardListener
+ 	public void routeWasFinished() {
+ 	}
+ 
++	@Override
++	public void followingModeChanged(boolean following) {
++	}
++
+ 	public void onResume() {
+ 		OsmandApplication app = getApp();
+ 		if (app != null) {
+diff --git a/OsmAnd/src/net/osmand/plus/routepreparationmenu/ShowAlongTheRouteBottomSheet.java b/OsmAnd/src/net/osmand/plus/routepreparationmenu/ShowAlongTheRouteBottomSheet.java
+index d992db6..d2d647d 100644
+--- a/OsmAnd/src/net/osmand/plus/routepreparationmenu/ShowAlongTheRouteBottomSheet.java
++++ b/OsmAnd/src/net/osmand/plus/routepreparationmenu/ShowAlongTheRouteBottomSheet.java
+@@ -174,6 +174,10 @@ public class ShowAlongTheRouteBottomSheet extends MenuBottomSheetDialogFragment
+ 
+ 	}
+ 
++	@Override
++	public void followingModeChanged(boolean following) {
++	}
++
+ 	@Override
+ 	public void onPause() {
+ 		super.onPause();
+diff --git a/OsmAnd/src/net/osmand/plus/routing/IRouteInformationListener.java b/OsmAnd/src/net/osmand/plus/routing/IRouteInformationListener.java
+index 7fd365b..c439108 100644
+--- a/OsmAnd/src/net/osmand/plus/routing/IRouteInformationListener.java
++++ b/OsmAnd/src/net/osmand/plus/routing/IRouteInformationListener.java
+@@ -9,4 +9,6 @@ public interface IRouteInformationListener {
+ 	void routeWasCancelled();
+ 
+ 	void routeWasFinished();
++
++	void followingModeChanged(boolean following);
+ }
+\ No newline at end of file
+diff --git a/OsmAnd/src/net/osmand/plus/routing/RoutingHelper.java b/OsmAnd/src/net/osmand/plus/routing/RoutingHelper.java
+index dfa638e..0b944e4 100644
+--- a/OsmAnd/src/net/osmand/plus/routing/RoutingHelper.java
++++ b/OsmAnd/src/net/osmand/plus/routing/RoutingHelper.java
+@@ -222,6 +222,7 @@ public class RoutingHelper {
+ 		} else {
+ 			app.startNavigationService(NavigationService.USED_BY_NAVIGATION);
+ 		}
++		fireFollowingModeChanged(follow);
+ 	}
+ 
+ 	public boolean isRoutePlanningMode() {
+@@ -997,4 +998,19 @@ public class RoutingHelper {
+ 	public void stopCalculationImmediately() {
+ 		routeRecalculationHelper.stopCalculation();
+ 	}
++
++	private void fireFollowingModeChanged(boolean follow) {
++		app.runInUIThread(() -> {
++			Iterator<java.lang.ref.WeakReference<IRouteInformationListener>> it = listeners.iterator();
++			while (it.hasNext()) {
++				java.lang.ref.WeakReference<IRouteInformationListener> ref = it.next();
++				IRouteInformationListener l = ref.get();
++				if (l == null) {
++					it.remove();
++				} else {
++					l.followingModeChanged(follow);
++				}
++			}
++		});
++	}
+ }
+diff --git a/OsmAnd/src/net/osmand/plus/settings/backend/OsmandSettings.java b/OsmAnd/src/net/osmand/plus/settings/backend/OsmandSettings.java
+index 7e642f2..24db09c 100644
+--- a/OsmAnd/src/net/osmand/plus/settings/backend/OsmandSettings.java
++++ b/OsmAnd/src/net/osmand/plus/settings/backend/OsmandSettings.java
+@@ -1480,6 +1480,8 @@ public class OsmandSettings {
+ 
+ 	public final OsmandPreference<Boolean> MAP_EMPTY_STATE_ALLOWED = new BooleanPreference(this, "map_empty_state_allowed", false).makeProfile().cache();
+ 
++	public final CommonPreference<Boolean> HUD_MAP_STYLE = registerBooleanPreference("hud_map_style", false).makeProfile();
++
+ 	public final OsmandPreference<Boolean> FIXED_NORTH_MAP = new BooleanPreference(this, "fix_north_map", false).makeProfile().cache();
+ 
+ 
+diff --git a/OsmAnd/src/net/osmand/plus/settings/fragments/MapDuringNavigationFragment.java b/OsmAnd/src/net/osmand/plus/settings/fragments/MapDuringNavigationFragment.java
+index 49b70fa..018de03 100644
+--- a/OsmAnd/src/net/osmand/plus/settings/fragments/MapDuringNavigationFragment.java
++++ b/OsmAnd/src/net/osmand/plus/settings/fragments/MapDuringNavigationFragment.java
+@@ -24,6 +24,13 @@ public class MapDuringNavigationFragment extends BaseSettingsFragment {
+ 		setupAutoZoom3dAnglePref();
+ 		setupPreviewNextTurnPref();
+ 		setupSnapToRoadPref();
++		setupHudStylePref();
++	}
++
++	private void setupHudStylePref() {
++		SwitchPreferenceEx hudStyle = findPreference(settings.HUD_MAP_STYLE.getId());
++		hudStyle.setTitle(getString(R.string.hud_map_style));
++		hudStyle.setDescription(getString(R.string.hud_map_style_descr));
+ 	}
+ 
+ 	private void setupAutoFollowPref() {
+diff --git a/OsmAnd/src/net/osmand/plus/views/layers/POIMapLayer.java b/OsmAnd/src/net/osmand/plus/views/layers/POIMapLayer.java
+index ac6f870..cede7f4 100644
+--- a/OsmAnd/src/net/osmand/plus/views/layers/POIMapLayer.java
++++ b/OsmAnd/src/net/osmand/plus/views/layers/POIMapLayer.java
+@@ -1115,6 +1115,10 @@ public class POIMapLayer extends OsmandMapLayer implements IContextMenuProvider,
+ 	public void routeWasFinished() {
+ 	}
+ 
++	@Override
++	public void followingModeChanged(boolean following) {
++	}
++
+ 	public void setCustomMapObjects(List<Amenity> amenities) {
+ 		if (customObjectsDelegate != null) {
+ 			data.clearCache();
