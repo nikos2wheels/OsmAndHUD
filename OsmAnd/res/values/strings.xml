@@ -20,6 +20,10 @@
 	<string name="intersecting_roads_radius">Clipping radius</string>
 	<string name="intersecting_roads_thickness">Intersection line thickness</string>
 	<string name="intersecting_roads_color">Color of intersecting roads</string>
+	<string name="spotlight_filter_enabled">Do not show the following class of intersecting roads</string>
+	<string name="spotlight_filter_tracks">Tracks/Paths</string>
+	<string name="spotlight_filter_access">Access Roads</string>
+	<string name="spotlight_filter_local">Minor Local Roads</string>
 	<string name="share_favorites_media_preparation_failed">Couldn\'t include attached media. Sharing points only.</string>
 	<plurals name="files_count">
 		<item quantity="one">%d file</item>

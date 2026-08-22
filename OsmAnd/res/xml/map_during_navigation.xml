@@ -48,6 +48,38 @@
 		android:layout="@layout/preference_with_descr"
 		android:title="@string/intersecting_roads_color" />
 
+	<net.osmand.plus.settings.preferences.SwitchPreferenceEx
+		android:dependency="spotlight_navigation"
+		android:key="spotlight_filter_enabled"
+		android:layout="@layout/preference_dialog_and_switch"
+		android:summaryOff="@string/shared_string_off"
+		android:summaryOn="@string/shared_string_on"
+		android:title="@string/spotlight_filter_enabled" />
+
+	<net.osmand.plus.settings.preferences.SwitchPreferenceEx
+		android:dependency="spotlight_filter_enabled"
+		android:key="spotlight_filter_tracks"
+		android:layout="@layout/preference_dialog_and_switch"
+		android:summaryOff="@string/shared_string_off"
+		android:summaryOn="@string/shared_string_on"
+		android:title="@string/spotlight_filter_tracks" />
+
+	<net.osmand.plus.settings.preferences.SwitchPreferenceEx
+		android:dependency="spotlight_filter_enabled"
+		android:key="spotlight_filter_access"
+		android:layout="@layout/preference_dialog_and_switch"
+		android:summaryOff="@string/shared_string_off"
+		android:summaryOn="@string/shared_string_on"
+		android:title="@string/spotlight_filter_access" />
+
+	<net.osmand.plus.settings.preferences.SwitchPreferenceEx
+		android:dependency="spotlight_filter_enabled"
+		android:key="spotlight_filter_local"
+		android:layout="@layout/preference_dialog_and_switch"
+		android:summaryOff="@string/shared_string_off"
+		android:summaryOn="@string/shared_string_on"
+		android:title="@string/spotlight_filter_local" />
+
 	<Preference
 		android:layout="@layout/divider_half_item_with_background"
 		android:selectable="false" />

@@ -806,6 +806,11 @@ public class RouteLayer extends BaseRouteLayer implements IContextMenuProvider {
 		boolean maneuverOnly = getApplication().getSettings().SPOTLIGHT_ACTION_POINTS_ONLY.get();
 		int currentRouteIdx = route.getCurrentRoute();
 
+		boolean filterEnabled = getApplication().getSettings().SPOTLIGHT_FILTER_ENABLED.get();
+		boolean filterTracks = getApplication().getSettings().SPOTLIGHT_FILTER_TRACKS.get();
+		boolean filterAccess = getApplication().getSettings().SPOTLIGHT_FILTER_ACCESS.get();
+		boolean filterLocal = getApplication().getSettings().SPOTLIGHT_FILTER_LOCAL.get();
+
 		Set<Integer> actionPointIndexes = null;
 		if (maneuverOnly) {
 			actionPointIndexes = new HashSet<>();
@@ -839,6 +844,20 @@ public class RouteLayer extends BaseRouteLayer implements IContextMenuProvider {
 					LatLon junction = segment.getPoint(nodeIdx);
 
 					for (RouteSegmentResult rs : attached) {
+						if (filterEnabled) {
+							String highway = rs.getObject().getHighway();
+							if (highway != null) {
+								if (filterTracks && (highway.equals("track") || highway.equals("path") || highway.equals("footway") || highway.equals("cycleway"))) {
+									continue;
+								}
+								if (filterAccess && highway.equals("service")) {
+									continue;
+								}
+								if (filterLocal && (highway.equals("residential") || highway.equals("living_street") || highway.equals("unclassified"))) {
+									continue;
+								}
+							}
+						}
 						// 1. Find the index of the junction point in the attached road
 						int rsStart = rs.getStartPointIndex();
 						int rsEnd = rs.getEndPointIndex();

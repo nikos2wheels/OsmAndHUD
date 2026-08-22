@@ -30,6 +30,27 @@ public class MapDuringNavigationFragment extends BaseSettingsFragment {
 		setupSpotlightRadiusPref();
 		setupSpotlightThicknessPref();
 		setupSpotlightColorPref();
+		setupSpotlightFilterPrefs();
+	}
+
+	private void setupSpotlightFilterPrefs() {
+		SwitchPreferenceEx filterEnabled = findPreference(settings.SPOTLIGHT_FILTER_ENABLED.getId());
+		SwitchPreferenceEx filterTracks = findPreference(settings.SPOTLIGHT_FILTER_TRACKS.getId());
+		SwitchPreferenceEx filterAccess = findPreference(settings.SPOTLIGHT_FILTER_ACCESS.getId());
+		SwitchPreferenceEx filterLocal = findPreference(settings.SPOTLIGHT_FILTER_LOCAL.getId());
+
+		net.osmand.StateChangedListener<Boolean> listener = newValue -> {
+			boolean anyEnabled = settings.SPOTLIGHT_FILTER_TRACKS.get()
+					|| settings.SPOTLIGHT_FILTER_ACCESS.get()
+					|| settings.SPOTLIGHT_FILTER_LOCAL.get();
+			if (!anyEnabled && settings.SPOTLIGHT_FILTER_ENABLED.get()) {
+				applyPreference(settings.SPOTLIGHT_FILTER_ENABLED.getId(), false, false);
+			}
+		};
+
+		settings.SPOTLIGHT_FILTER_TRACKS.addListener(listener);
+		settings.SPOTLIGHT_FILTER_ACCESS.addListener(listener);
+		settings.SPOTLIGHT_FILTER_LOCAL.addListener(listener);
 	}
 
 	private void setupSpotlightColorPref() {

@@ -259,6 +259,10 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		settings.INTERSECTING_ROADS_THICKNESS.addListener(spotlightSettingsListener);
 		settings.INTERSECTING_ROADS_COLOR.addListener(spotlightSettingsListener);
 		settings.SPOTLIGHT_ACTION_POINTS_ONLY.addListener(spotlightSettingsListener);
+		settings.SPOTLIGHT_FILTER_ENABLED.addListener(spotlightSettingsListener);
+		settings.SPOTLIGHT_FILTER_TRACKS.addListener(spotlightSettingsListener);
+		settings.SPOTLIGHT_FILTER_ACCESS.addListener(spotlightSettingsListener);
+		settings.SPOTLIGHT_FILTER_LOCAL.addListener(spotlightSettingsListener);
 
 		setContentView(R.layout.main);
 		enterToFullScreen();
@@ -1069,6 +1073,10 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		settings.INTERSECTING_ROADS_THICKNESS.removeListener(spotlightSettingsListener);
 		settings.INTERSECTING_ROADS_COLOR.removeListener(spotlightSettingsListener);
 		settings.SPOTLIGHT_ACTION_POINTS_ONLY.removeListener(spotlightSettingsListener);
+		settings.SPOTLIGHT_FILTER_ENABLED.removeListener(spotlightSettingsListener);
+		settings.SPOTLIGHT_FILTER_TRACKS.removeListener(spotlightSettingsListener);
+		settings.SPOTLIGHT_FILTER_ACCESS.removeListener(spotlightSettingsListener);
+		settings.SPOTLIGHT_FILTER_LOCAL.removeListener(spotlightSettingsListener);
 		PluginsHelper.onMapActivityDestroy(this);
 		app.unsubscribeInitListener(initListener);
 		NavigationSession carNavigationSession = app.getCarNavigationSession();
