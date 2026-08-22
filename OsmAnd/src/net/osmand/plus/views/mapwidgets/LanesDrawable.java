@@ -29,17 +29,17 @@ public class LanesDrawable extends Drawable {
 	public boolean imminent;
 	public boolean isTurnByTurn;
 	public boolean isNightMode;
-	private final Context ctx;
-	private final Paint paintBlack;
-	private final Paint paintRouteDirection;
-	private final Paint paintSecondTurn;
-	private final float size;
+	protected final Context ctx;
+	protected final Paint paintBlack;
+	protected final Paint paintRouteDirection;
+	protected final Paint paintSecondTurn;
+	protected final float size;
 
-	private float delta;
-	private final boolean leftSide;
-	private final float imgMinDelta;
-	private final float imgMargin;
-	private final float laneHalfSize;
+	protected float delta;
+	protected final boolean leftSide;
+	protected final float imgMinDelta;
+	protected final float imgMargin;
+	protected final float laneHalfSize;
 
 	private int height;
 	private int width;

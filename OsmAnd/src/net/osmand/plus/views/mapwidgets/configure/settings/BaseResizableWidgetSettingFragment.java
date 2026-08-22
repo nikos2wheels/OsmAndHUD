@@ -28,7 +28,7 @@ public class BaseResizableWidgetSettingFragment extends WidgetInfoBaseFragment {
 
 	protected OsmandPreference<WidgetSize> widgetSizePref;
 
-	private WidgetSize selectedWidgetSize;
+	protected WidgetSize selectedWidgetSize;
 
 	@Override
 	protected void initParams(@NonNull Bundle bundle) {

@@ -58,6 +58,7 @@ public enum WidgetType {
 	STREET_NAME("street_name", R.string.street_name, R.string.street_name_widget_desc, R.drawable.widget_street_name_day, R.drawable.widget_street_name_night, R.string.docs_widget_street_name, null, BOTTOM),
 	MARKERS_TOP_BAR("map_markers_top", R.string.map_markers_bar, R.string.map_markers_bar_widget_desc, R.drawable.widget_markers_topbar_day, R.drawable.widget_markers_topbar_night, R.string.docs_widget_markers, null, TOP),
 	LANES("lanes", R.string.show_lanes, R.string.lanes_widgets_desc, R.drawable.widget_lanes_day, R.drawable.widget_lanes_night, R.string.docs_widget_lanes, null, ROUTE_GUIDANCE, TOP),
+	HUD_LANE_GUIDANCE("hud_lane_guidance", R.string.hud_lane_guidance, R.string.hud_lane_guidance_desc, R.drawable.widget_lanes_day, R.drawable.widget_lanes_night, 0, null, ROUTE_GUIDANCE, TOP),
 
 	// Right panel
 	DISTANCE_TO_DESTINATION("distance", R.string.map_widget_distance_to_destination, R.string.distance_to_destination_widget_desc, R.drawable.widget_target_day, R.drawable.widget_target_night, 0, WidgetGroup.NAVIGATION_POINTS, RIGHT),
@@ -390,6 +391,8 @@ public enum WidgetType {
 			return new MemoryInfoFragment();
 		} else if (this == LANES) {
 			return new LanesWidgetInfoFragment();
+		} else if (this == HUD_LANE_GUIDANCE) {
+			return new HudLaneGuidanceWidgetInfoFragment();
 		} else if (this == ROUTE_INFO) {
 			return new RouteInfoWidgetInfoFragment();
 		} else if (this == STREET_NAME) {

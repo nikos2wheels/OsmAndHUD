@@ -13,6 +13,7 @@ import static net.osmand.plus.views.mapwidgets.WidgetType.ELEVATION_PROFILE;
 import static net.osmand.plus.views.mapwidgets.WidgetType.GLIDE_AVERAGE;
 import static net.osmand.plus.views.mapwidgets.WidgetType.GLIDE_TARGET;
 import static net.osmand.plus.views.mapwidgets.WidgetType.GPS_INFO;
+import static net.osmand.plus.views.mapwidgets.WidgetType.HUD_LANE_GUIDANCE;
 import static net.osmand.plus.views.mapwidgets.WidgetType.INTERMEDIATE_DESTINATION;
 import static net.osmand.plus.views.mapwidgets.WidgetType.LANES;
 import static net.osmand.plus.views.mapwidgets.WidgetType.MAGNETIC_BEARING;
@@ -91,6 +92,7 @@ public class WidgetsInitializer {
 		addWidgetInfo(COORDINATES_MAP_CENTER);
 		addWidgetInfo(STREET_NAME);
 		addWidgetInfo(LANES);
+		addWidgetInfo(HUD_LANE_GUIDANCE);
 		addWidgetInfo(ROUTE_INFO);
 		addWidgetInfo(MARKERS_TOP_BAR);
 	}
@@ -103,6 +105,7 @@ public class WidgetsInitializer {
 		addWidgetInfo(NEXT_TURN);
 		addWidgetInfo(SMALL_NEXT_TURN);
 		addWidgetInfo(SECOND_NEXT_TURN);
+		addWidgetInfo(HUD_LANE_GUIDANCE);
 	}
 
 	private void createRightWidgets() {

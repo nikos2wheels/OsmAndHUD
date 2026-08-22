@@ -1493,6 +1493,9 @@ public class OsmandSettings {
 	public final CommonPreference<Boolean> SPOTLIGHT_FILTER_ACCESS = registerBooleanPreference("spotlight_filter_access", false).makeProfile();
 	public final CommonPreference<Boolean> SPOTLIGHT_FILTER_LOCAL = registerBooleanPreference("spotlight_filter_local", false).makeProfile();
 
+	public final CommonPreference<Float> HUD_LANE_GUIDANCE_Y = registerFloatPreference("hud_lane_guidance_y", -1f).makeProfile();
+	public final CommonPreference<Float> HUD_LANE_GUIDANCE_Y_LANDSCAPE = registerFloatPreference("hud_lane_guidance_y_landscape", -1f).makeProfile();
+
 	public final OsmandPreference<Boolean> FIXED_NORTH_MAP = new BooleanPreference(this, "fix_north_map", false).makeProfile().cache();
 
 
@@ -1694,6 +1697,9 @@ public class OsmandSettings {
 	public final CommonPreference<Boolean> ENABLE_TIME_CONDITIONAL_ROUTING = new BooleanPreference(this, "enable_time_conditional_routing", true).makeProfile();
 
 	public final CommonPreference<Boolean> SHOW_MINOR_TURNS = new BooleanPreference(this, "show_minor_turns", true).makeProfile();
+
+	public final CommonPreference<Boolean> HUD_SHOW_MINOR_TURNS = new BooleanPreference(this, "hud_show_minor_turns", false).makeProfile();
+	public final CommonPreference<Boolean> HUD_SHOW_EXIT_NUMBERS = new BooleanPreference(this, "hud_show_exit_numbers", true).makeProfile();
 
 	public boolean simulateNavigation;
 	public boolean simulateNavigationStartedFromAdb;

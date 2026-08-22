@@ -47,6 +47,12 @@
 	<color name="icon_color_warning">#EE5622</color>
 	<color name="map_button_icon_color_light">#727272</color>
 	<color name="map_button_icon_color_dark">#cccccc</color>
+
+	<color name="HUD_nav_arrow_distant">#000000</color>
+	<color name="HUD_nav_arrow">#FFFFFF</color>
+	<color name="HUD_nav_arrow_stroke_color">#FFFFFF</color>
+	<color name="HUD_nav_arrow_imminent">#000000</color>
+
 	<color name="map_button_background_color_light">#FFFFFF</color>
 	<color name="map_button_background_color_dark">#000000</color>
 	<color name="icon_color_inverse_light">#FFFFFF</color>

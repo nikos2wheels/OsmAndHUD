@@ -16,11 +16,11 @@ import net.osmand.plus.views.mapwidgets.widgets.HudLaneGuidanceWidget;
 
 public class HudLaneGuidanceWidgetInfoFragment extends BaseResizableWidgetSettingFragment {
 
+    private static final String SHOW_MINOR_TURNS = "hud_show_minor_turns";
     private static final String SHOW_EXIT_NUMBERS = "hud_show_exit_numbers";
-    private static final String SHOW_NEXT_TURN = "hud_show_next_turn";
 
+    private boolean showMinorTurns;
     private boolean showExitNumbers;
-    private boolean showNextTurn;
 
     @NonNull
     @Override
@@ -31,38 +31,36 @@ public class HudLaneGuidanceWidgetInfoFragment extends BaseResizableWidgetSettin
     @Override
     protected void initParams(@NonNull Bundle bundle) {
         super.initParams(bundle);
+        showMinorTurns = bundle.getBoolean(SHOW_MINOR_TURNS, settings.HUD_SHOW_MINOR_TURNS.getModeValue(appMode));
         showExitNumbers = bundle.getBoolean(SHOW_EXIT_NUMBERS, settings.HUD_SHOW_EXIT_NUMBERS.getModeValue(appMode));
-        showNextTurn = bundle.getBoolean(SHOW_NEXT_TURN, settings.HUD_SHOW_NEXT_TURN.getModeValue(appMode));
     }
 
     @Override
     protected void setupMainContent(@NonNull ViewGroup container) {
-        // Ensure the settings section is visible in the base layout
         View mainContainer = view.findViewById(R.id.main_container);
         if (mainContainer != null) {
             mainContainer.setVisibility(View.VISIBLE);
         }
 
-        View nextTurnView = getLayoutInflater().inflate(R.layout.widget_preference_with_switch, container, false);
-        container.addView(nextTurnView);
-        setupNextTurnPref(nextTurnView);
+        View minorTurnsView = getLayoutInflater().inflate(R.layout.widget_preference_with_switch, container, false);
+        container.addView(minorTurnsView);
+        setupMinorTurnsPref(minorTurnsView);
 
-        // Inflate without attaching to root to ensure we get a fresh View instance
         View exitNumbersView = getLayoutInflater().inflate(R.layout.widget_preference_with_switch, container, false);
         container.addView(exitNumbersView);
         setupExitNumbersPref(exitNumbersView);
     }
 
-    private void setupNextTurnPref(@NonNull View view) {
+    private void setupMinorTurnsPref(@NonNull View view) {
         TextView title = view.findViewById(R.id.title);
         TextView description = view.findViewById(R.id.description);
 
-        title.setText(R.string.hud_show_next_turn);
-        description.setVisibility(View.GONE);
+        title.setText(R.string.show_minor_turns);
+        description.setText(R.string.show_minor_turns_descr);
 
         CompoundButton compoundButton = view.findViewById(R.id.compound_button);
-        compoundButton.setChecked(showNextTurn);
-        compoundButton.setOnCheckedChangeListener((buttonView, isChecked) -> showNextTurn = isChecked);
+        compoundButton.setChecked(showMinorTurns);
+        compoundButton.setOnCheckedChangeListener((buttonView, isChecked) -> showMinorTurns = isChecked);
 
         view.setOnClickListener(v -> compoundButton.setChecked(!compoundButton.isChecked()));
         view.setBackground(getPressedStateDrawable());
@@ -99,15 +97,15 @@ public class HudLaneGuidanceWidgetInfoFragment extends BaseResizableWidgetSettin
             widgetSizePref.setModeValue(appMode, selectedWidgetSize);
         }
         super.applySettings();
+        settings.HUD_SHOW_MINOR_TURNS.setModeValue(appMode, showMinorTurns);
         settings.HUD_SHOW_EXIT_NUMBERS.setModeValue(appMode, showExitNumbers);
-        settings.HUD_SHOW_NEXT_TURN.setModeValue(appMode, showNextTurn);
         app.getRoutingHelper().onSettingsChanged(appMode);
     }
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
+        outState.putBoolean(SHOW_MINOR_TURNS, showMinorTurns);
         outState.putBoolean(SHOW_EXIT_NUMBERS, showExitNumbers);
-        outState.putBoolean(SHOW_NEXT_TURN, showNextTurn);
     }
 }

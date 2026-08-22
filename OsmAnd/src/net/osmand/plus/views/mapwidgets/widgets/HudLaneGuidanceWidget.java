@@ -201,7 +201,7 @@ public class HudLaneGuidanceWidget extends MapWidget implements ISupportWidgetRe
 
             NextDirectionInfo turnInfo = routingHelper.getNextRouteDirectionInfo(new NextDirectionInfo(), true);
             if (turnInfo != null && turnInfo.directionInfo != null) {
-                if ((lanes == null || lanes.length == 0) && settings.HUD_SHOW_NEXT_TURN.getModeValue(routingHelper.getAppMode())) {
+                if (lanes == null || lanes.length == 0) {
                     turnType = turnInfo.directionInfo.getTurnType();
                     distance = turnInfo.distanceTo;
                     imminent = turnInfo.imminent;
