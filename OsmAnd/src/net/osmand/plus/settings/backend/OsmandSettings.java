@@ -1700,6 +1700,7 @@ public class OsmandSettings {
 
 	public final CommonPreference<Boolean> HUD_SHOW_MINOR_TURNS = new BooleanPreference(this, "hud_show_minor_turns", false).makeProfile();
 	public final CommonPreference<Boolean> HUD_SHOW_EXIT_NUMBERS = new BooleanPreference(this, "hud_show_exit_numbers", true).makeProfile();
+	public final CommonPreference<Boolean> HUD_SHOW_NEXT_TURN = new BooleanPreference(this, "hud_show_next_turn", true).makeProfile();
 
 	public boolean simulateNavigation;
 	public boolean simulateNavigationStartedFromAdb;

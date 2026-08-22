@@ -27,6 +27,7 @@
 	<string name="hud_lane_guidance">HUD Lanes/Next Turn</string>
 	<string name="hud_lane_guidance_desc">Displays HUD Lane guidance and Next Turn arrows</string>
 	<string name="hud_show_exit_numbers">Show exit numbers</string>
+	<string name="hud_show_next_turn">Show next turn arrows</string>
 	<string name="share_favorites_media_preparation_failed">Couldn\'t include attached media. Sharing points only.</string>
 	<plurals name="files_count">
 		<item quantity="one">%d file</item>
