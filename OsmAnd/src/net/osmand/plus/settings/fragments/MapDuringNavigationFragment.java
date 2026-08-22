@@ -29,6 +29,28 @@ public class MapDuringNavigationFragment extends BaseSettingsFragment {
 		setupSpotlightActionPointsOnlyPref();
 		setupSpotlightRadiusPref();
 		setupSpotlightThicknessPref();
+		setupSpotlightColorPref();
+	}
+
+	private void setupSpotlightColorPref() {
+		ListPreferenceEx colorPref = findPreference(settings.INTERSECTING_ROADS_COLOR.getId());
+		Integer[] values = {
+				android.graphics.Color.WHITE,
+				android.graphics.Color.YELLOW,
+				android.graphics.Color.CYAN,
+				android.graphics.Color.MAGENTA,
+				android.graphics.Color.GREEN,
+				android.graphics.Color.RED,
+				android.graphics.Color.BLUE,
+				android.graphics.Color.LTGRAY,
+				android.graphics.Color.parseColor("#FF88E030"), // Light Green
+				android.graphics.Color.parseColor("#FFFF5020")  // Orange
+		};
+		String[] entries = {
+				"White", "Yellow", "Cyan", "Magenta", "Green", "Red", "Blue", "Grey", "Light Green", "Orange"
+		};
+		colorPref.setEntries(entries);
+		colorPref.setEntryValues(values);
 	}
 
 	private void setupSpotlightThicknessPref() {

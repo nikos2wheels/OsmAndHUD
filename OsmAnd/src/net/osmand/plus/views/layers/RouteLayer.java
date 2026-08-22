@@ -802,6 +802,7 @@ public class RouteLayer extends BaseRouteLayer implements IContextMenuProvider {
 
 		float radiusMeters = getApplication().getSettings().INTERSECTING_ROADS_RADIUS.get();
 		float thickness = getApplication().getSettings().INTERSECTING_ROADS_THICKNESS.get() * getContext().getResources().getDisplayMetrics().density;
+		int color = getApplication().getSettings().INTERSECTING_ROADS_COLOR.get();
 		boolean maneuverOnly = getApplication().getSettings().SPOTLIGHT_ACTION_POINTS_ONLY.get();
 		int currentRouteIdx = route.getCurrentRoute();
 
@@ -898,12 +899,13 @@ public class RouteLayer extends BaseRouteLayer implements IContextMenuProvider {
 									vl.setPoints(points);
 									vl.setIsHidden(false);
 									vl.setLineWidth(thickness);
+									vl.setFillColor(NativeUtilities.createFColorARGB(color));
 								} else {
 									net.osmand.core.jni.VectorLineBuilder builder = new net.osmand.core.jni.VectorLineBuilder();
 									builder.setPoints(points)
 											.setBaseOrder(baseOrder)
 											.setLineWidth(thickness)
-											.setFillColor(NativeUtilities.createFColorARGB(Color.WHITE))
+											.setFillColor(NativeUtilities.createFColorARGB(color))
 											.setIsHidden(false);
 									builder.buildAndAddToCollection(spotlightLinesCollection);
 								}
@@ -961,8 +963,9 @@ public class RouteLayer extends BaseRouteLayer implements IContextMenuProvider {
 		if (segments == null) return;
 
 		float thickness = getApplication().getSettings().INTERSECTING_ROADS_THICKNESS.get() * getContext().getResources().getDisplayMetrics().density;
+		int color = getApplication().getSettings().INTERSECTING_ROADS_COLOR.get();
 		roadPaint.setStyle(Paint.Style.STROKE);
-		roadPaint.setColor(Color.WHITE);
+		roadPaint.setColor(color);
 		roadPaint.setStrokeWidth(thickness);
 		roadPaint.setStrokeCap(Cap.ROUND);
 		roadPaint.setStrokeJoin(Paint.Join.ROUND);

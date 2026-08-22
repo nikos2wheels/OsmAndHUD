@@ -225,6 +225,11 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		}
 	};
 	private final net.osmand.StateChangedListener<Boolean> hudMapStyleListener = newValue -> app.runInUIThread(this::checkHudStyle);
+	private final net.osmand.StateChangedListener spotlightSettingsListener = newValue -> app.runInUIThread(() -> {
+		if (getMapView() != null) {
+			getMapView().refreshMap();
+		}
+	});
 	private KeyEventHelper keyEventHelper;
 	private RouteCalculationProgressListener routeCalculationProgressCallback;
 	private TransportRouteCalculationProgressCallback transportRouteCalculationProgressCallback;
@@ -249,6 +254,12 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		trackDetailsMenu.setMapActivity(this);
 
 		settings.HUD_MAP_STYLE.addListener(hudMapStyleListener);
+		settings.SPOTLIGHT_NAVIGATION.addListener(spotlightSettingsListener);
+		settings.INTERSECTING_ROADS_RADIUS.addListener(spotlightSettingsListener);
+		settings.INTERSECTING_ROADS_THICKNESS.addListener(spotlightSettingsListener);
+		settings.INTERSECTING_ROADS_COLOR.addListener(spotlightSettingsListener);
+		settings.SPOTLIGHT_ACTION_POINTS_ONLY.addListener(spotlightSettingsListener);
+
 		setContentView(R.layout.main);
 		enterToFullScreen();
 		// Navigation Drawer
@@ -1053,6 +1064,11 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		app.getAidlApi().onDestroyMapActivity(this);
 		app.getImportHelper().resetUIActivity(this);
 		settings.HUD_MAP_STYLE.removeListener(hudMapStyleListener);
+		settings.SPOTLIGHT_NAVIGATION.removeListener(spotlightSettingsListener);
+		settings.INTERSECTING_ROADS_RADIUS.removeListener(spotlightSettingsListener);
+		settings.INTERSECTING_ROADS_THICKNESS.removeListener(spotlightSettingsListener);
+		settings.INTERSECTING_ROADS_COLOR.removeListener(spotlightSettingsListener);
+		settings.SPOTLIGHT_ACTION_POINTS_ONLY.removeListener(spotlightSettingsListener);
 		PluginsHelper.onMapActivityDestroy(this);
 		app.unsubscribeInitListener(initListener);
 		NavigationSession carNavigationSession = app.getCarNavigationSession();

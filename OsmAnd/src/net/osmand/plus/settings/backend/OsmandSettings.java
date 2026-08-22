@@ -1485,6 +1485,7 @@ public class OsmandSettings {
 	public final CommonPreference<Boolean> SPOTLIGHT_NAVIGATION = registerBooleanPreference("spotlight_navigation", true).makeProfile();
 	public final CommonPreference<Integer> INTERSECTING_ROADS_RADIUS = registerIntPreference("intersecting_roads_radius", 50).makeProfile();
 	public final CommonPreference<Integer> INTERSECTING_ROADS_THICKNESS = registerIntPreference("intersecting_roads_thickness", 2).makeProfile();
+	public final CommonPreference<Integer> INTERSECTING_ROADS_COLOR = registerIntPreference("intersecting_roads_color", Color.WHITE).makeProfile();
 	public final CommonPreference<Boolean> SPOTLIGHT_ACTION_POINTS_ONLY = registerBooleanPreference("spotlight_action_points_only", false).makeProfile();
 
 	public final OsmandPreference<Boolean> FIXED_NORTH_MAP = new BooleanPreference(this, "fix_north_map", false).makeProfile().cache();

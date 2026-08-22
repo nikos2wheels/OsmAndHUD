@@ -42,6 +42,12 @@
 		android:layout="@layout/preference_with_descr"
 		android:title="@string/intersecting_roads_thickness" />
 
+	<net.osmand.plus.settings.preferences.ListPreferenceEx
+		android:dependency="spotlight_navigation"
+		android:key="intersecting_roads_color"
+		android:layout="@layout/preference_with_descr"
+		android:title="@string/intersecting_roads_color" />
+
 	<Preference
 		android:layout="@layout/divider_half_item_with_background"
 		android:selectable="false" />
