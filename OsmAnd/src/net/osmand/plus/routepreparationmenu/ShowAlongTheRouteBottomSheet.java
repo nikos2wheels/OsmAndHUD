@@ -175,6 +175,10 @@ public class ShowAlongTheRouteBottomSheet extends MenuBottomSheetDialogFragment 
 	}
 
 	@Override
+	public void followingModeChanged(boolean following) {
+	}
+
+	@Override
 	public void onPause() {
 		super.onPause();
 		app.getRoutingHelper().removeListener(this);

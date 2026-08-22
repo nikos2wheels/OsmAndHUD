@@ -24,6 +24,13 @@ public class MapDuringNavigationFragment extends BaseSettingsFragment {
 		setupAutoZoom3dAnglePref();
 		setupPreviewNextTurnPref();
 		setupSnapToRoadPref();
+		setupHudStylePref();
+	}
+
+	private void setupHudStylePref() {
+		SwitchPreferenceEx hudStyle = findPreference(settings.HUD_MAP_STYLE.getId());
+		hudStyle.setTitle(getString(R.string.hud_map_style));
+		hudStyle.setDescription(getString(R.string.hud_map_style_descr));
 	}
 
 	private void setupAutoFollowPref() {

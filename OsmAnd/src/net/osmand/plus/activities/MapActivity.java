@@ -224,6 +224,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 			});
 		}
 	};
+	private final net.osmand.StateChangedListener<Boolean> hudMapStyleListener = newValue -> app.runInUIThread(this::checkHudStyle);
 	private KeyEventHelper keyEventHelper;
 	private RouteCalculationProgressListener routeCalculationProgressCallback;
 	private TransportRouteCalculationProgressCallback transportRouteCalculationProgressCallback;
@@ -247,6 +248,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		mapRouteInfoMenu.setMapActivity(this);
 		trackDetailsMenu.setMapActivity(this);
 
+		settings.HUD_MAP_STYLE.addListener(hudMapStyleListener);
 		setContentView(R.layout.main);
 		enterToFullScreen();
 		// Navigation Drawer
@@ -1050,6 +1052,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		unregisterReceiver(screenOffReceiver);
 		app.getAidlApi().onDestroyMapActivity(this);
 		app.getImportHelper().resetUIActivity(this);
+		settings.HUD_MAP_STYLE.removeListener(hudMapStyleListener);
 		PluginsHelper.onMapActivityDestroy(this);
 		app.unsubscribeInitListener(initListener);
 		NavigationSession carNavigationSession = app.getCarNavigationSession();
@@ -1639,6 +1642,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 
 	@Override
 	public void newRouteIsCalculated(boolean newRoute, ValueHolder<Boolean> showToast) {
+		checkHudStyle();
 		if (mapRouteInfoMenu.isSelectFromMap()) {
 			return;
 		}
@@ -1681,11 +1685,13 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 
 	@Override
 	public void routeWasCancelled() {
+		checkHudStyle();
 		changeKeyguardFlags();
 	}
 
 	@Override
 	public void routeWasFinished() {
+		checkHudStyle();
 		if (!mIsDestroyed) {
 			DestinationReachedFragment.show(this);
 			changeKeyguardFlags();
@@ -1766,5 +1772,16 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 	@Override
 	public void onInAppPurchaseItemPurchased(String sku) {
 		getMapLayers().getRouteLayer().resetColorAvailabilityCache();
+	}
+
+	private void checkHudStyle() {
+		if (settings.HUD_MAP_STYLE.get()) {
+			updateMapSettings(true);
+		}
+	}
+
+	@Override
+	public void followingModeChanged(boolean following) {
+		checkHudStyle();
 	}
 }

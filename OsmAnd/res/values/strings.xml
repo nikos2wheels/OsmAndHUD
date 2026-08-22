@@ -11,6 +11,8 @@
 	Strings for OsmAnd core
 	Thx - Hardy
 -->
+	<string name="hud_map_style">HUD style</string>
+	<string name="hud_map_style_descr">Enable Head-Up Display map style (black background and white route line) during navigation</string>
 	<string name="share_favorites_media_preparation_failed">Couldn\'t include attached media. Sharing points only.</string>
 	<plurals name="files_count">
 		<item quantity="one">%d file</item>

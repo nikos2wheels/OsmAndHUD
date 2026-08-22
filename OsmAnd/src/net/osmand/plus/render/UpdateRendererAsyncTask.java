@@ -33,7 +33,11 @@ public class UpdateRendererAsyncTask extends AsyncTask<Void, Void, Boolean> {
 		RendererRegistry registry = app.getRendererRegistry();
 		OsmandMapTileView mapView = app.getOsmandMap().getMapView();
 
-		RenderingRulesStorage newRenderer = registry.getRenderer(settings.RENDERER.get());
+		String rendName = settings.RENDERER.get();
+		if (settings.HUD_MAP_STYLE.get() && app.getRoutingHelper().isFollowingMode()) {
+			rendName = RendererRegistry.HUD_RENDER;
+		}
+		RenderingRulesStorage newRenderer = registry.getRenderer(rendName);
 		if (newRenderer == null) {
 			newRenderer = registry.defaultRender();
 		}

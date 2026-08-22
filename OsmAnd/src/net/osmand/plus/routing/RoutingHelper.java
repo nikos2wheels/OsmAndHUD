@@ -222,6 +222,7 @@ public class RoutingHelper {
 		} else {
 			app.startNavigationService(NavigationService.USED_BY_NAVIGATION);
 		}
+		fireFollowingModeChanged(follow);
 	}
 
 	public boolean isRoutePlanningMode() {
@@ -996,5 +997,20 @@ public class RoutingHelper {
 
 	public void stopCalculationImmediately() {
 		routeRecalculationHelper.stopCalculation();
+	}
+
+	private void fireFollowingModeChanged(boolean follow) {
+		app.runInUIThread(() -> {
+			Iterator<java.lang.ref.WeakReference<IRouteInformationListener>> it = listeners.iterator();
+			while (it.hasNext()) {
+				java.lang.ref.WeakReference<IRouteInformationListener> ref = it.next();
+				IRouteInformationListener l = ref.get();
+				if (l == null) {
+					it.remove();
+				} else {
+					l.followingModeChanged(follow);
+				}
+			}
+		});
 	}
 }

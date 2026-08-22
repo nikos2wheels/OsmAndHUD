@@ -57,6 +57,7 @@ public class RendererRegistry {
 	public static final String ROUTES_RENDER = "Routes";
 	public static final String OSMASSISTANT_RENDER = "OSM Assistant";
 	public static final String PUBLICTRANSPORTROUTES_RENDER = "Public transport routes";
+	public static final String HUD_RENDER = "Hud";
 
 	public static boolean IGNORE_CACHED_STYLES = false; // enable to overwrite RENDERERS_DIR styles (debug)
 
@@ -100,6 +101,7 @@ public class RendererRegistry {
 		internalRenderers.put(ROUTES_RENDER, "routes" + ADDON_RENDERER_INDEX_EXT);
 		internalRenderers.put(OSMASSISTANT_RENDER, "osmassistant" + ADDON_RENDERER_INDEX_EXT);
 		internalRenderers.put(PUBLICTRANSPORTROUTES_RENDER, "publictransportroutes" + ADDON_RENDERER_INDEX_EXT);
+		internalRenderers.put(HUD_RENDER, HUD_RENDER + RENDERER_INDEX_EXT);
 	}
 
 	@Nullable

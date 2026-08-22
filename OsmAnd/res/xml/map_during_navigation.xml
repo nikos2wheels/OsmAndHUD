@@ -8,6 +8,17 @@
 		android:selectable="false"
 		android:title="@string/map_during_navigation_info" />
 
+	<net.osmand.plus.settings.preferences.SwitchPreferenceEx
+		android:key="hud_map_style"
+		android:layout="@layout/preference_dialog_and_switch"
+		android:summaryOff="@string/shared_string_off"
+		android:summaryOn="@string/shared_string_on"
+		android:title="@string/hud_map_style" />
+
+	<Preference
+		android:layout="@layout/divider_half_item_with_background"
+		android:selectable="false" />
+
 	<net.osmand.plus.settings.preferences.ListPreferenceEx
 		android:key="auto_follow_route"
 		android:layout="@layout/preference_with_descr"

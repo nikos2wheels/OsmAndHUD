@@ -1115,6 +1115,10 @@ public class POIMapLayer extends OsmandMapLayer implements IContextMenuProvider,
 	public void routeWasFinished() {
 	}
 
+	@Override
+	public void followingModeChanged(boolean following) {
+	}
+
 	public void setCustomMapObjects(List<Amenity> amenities) {
 		if (customObjectsDelegate != null) {
 			data.clearCache();

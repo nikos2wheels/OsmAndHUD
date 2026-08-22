@@ -926,4 +926,7 @@ public class SavingTrackHelper extends SQLiteOpenHelper implements IRouteInforma
 		shouldAutomaticallyRecord = true;
 	}
 
+	@Override
+	public void followingModeChanged(boolean following) {
+	}
 }

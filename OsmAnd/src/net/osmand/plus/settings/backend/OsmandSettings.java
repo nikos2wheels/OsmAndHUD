@@ -1480,6 +1480,8 @@ public class OsmandSettings {
 
 	public final OsmandPreference<Boolean> MAP_EMPTY_STATE_ALLOWED = new BooleanPreference(this, "map_empty_state_allowed", false).makeProfile().cache();
 
+	public final CommonPreference<Boolean> HUD_MAP_STYLE = registerBooleanPreference("hud_map_style", false).makeProfile();
+
 	public final OsmandPreference<Boolean> FIXED_NORTH_MAP = new BooleanPreference(this, "fix_north_map", false).makeProfile().cache();
 
 

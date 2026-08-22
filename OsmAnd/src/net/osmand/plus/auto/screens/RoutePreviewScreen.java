@@ -274,4 +274,8 @@ public final class RoutePreviewScreen extends BaseAndroidAutoScreen implements I
 	@Override
 	public void routeWasFinished() {
 	}
+
+	@Override
+	public void followingModeChanged(boolean following) {
+	}
 }

@@ -1324,4 +1324,8 @@ public class DashboardOnMap implements ObservableScrollViewCallbacks, IRouteInfo
 	@Override
 	public void routeWasFinished() {
 	}
+
+	@Override
+	public void followingModeChanged(boolean following) {
+	}
 }
