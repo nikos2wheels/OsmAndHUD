@@ -15,6 +15,33 @@
 		android:summaryOn="@string/shared_string_on"
 		android:title="@string/hud_map_style" />
 
+	<net.osmand.plus.settings.preferences.SwitchPreferenceEx
+		android:key="spotlight_navigation"
+		android:layout="@layout/preference_dialog_and_switch"
+		android:summaryOff="@string/shared_string_off"
+		android:summaryOn="@string/shared_string_on"
+		android:title="@string/spotlight_navigation" />
+
+	<net.osmand.plus.settings.preferences.SwitchPreferenceEx
+		android:dependency="spotlight_navigation"
+		android:key="spotlight_action_points_only"
+		android:layout="@layout/preference_dialog_and_switch"
+		android:summaryOff="@string/shared_string_off"
+		android:summaryOn="@string/shared_string_on"
+		android:title="@string/intersecting_roads_maneuver_only" />
+
+	<net.osmand.plus.settings.preferences.ListPreferenceEx
+		android:dependency="spotlight_navigation"
+		android:key="intersecting_roads_radius"
+		android:layout="@layout/preference_with_descr"
+		android:title="@string/intersecting_roads_radius" />
+
+	<net.osmand.plus.settings.preferences.ListPreferenceEx
+		android:dependency="spotlight_navigation"
+		android:key="intersecting_roads_thickness"
+		android:layout="@layout/preference_with_descr"
+		android:title="@string/intersecting_roads_thickness" />
+
 	<Preference
 		android:layout="@layout/divider_half_item_with_background"
 		android:selectable="false" />

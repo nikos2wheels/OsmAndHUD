@@ -13,6 +13,12 @@
 -->
 	<string name="hud_map_style">HUD style</string>
 	<string name="hud_map_style_descr">Enable Head-Up Display map style (black background and white route line) during navigation</string>
+	<string name="spotlight_navigation">Show only intersecting roads</string>
+	<string name="spotlight_navigation_descr">Display thin white lines for roads intersecting with your route</string>
+	<string name="intersecting_roads_maneuver_only">Only at route action points</string>
+	<string name="intersecting_roads_maneuver_only_descr">Show intersecting roads only at turns and maneuvers</string>
+	<string name="intersecting_roads_radius">Clipping radius</string>
+	<string name="intersecting_roads_thickness">Intersection line thickness</string>
 	<string name="share_favorites_media_preparation_failed">Couldn\'t include attached media. Sharing points only.</string>
 	<plurals name="files_count">
 		<item quantity="one">%d file</item>

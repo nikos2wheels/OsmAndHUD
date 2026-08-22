@@ -25,6 +25,44 @@ public class MapDuringNavigationFragment extends BaseSettingsFragment {
 		setupPreviewNextTurnPref();
 		setupSnapToRoadPref();
 		setupHudStylePref();
+		setupSpotlightPref();
+		setupSpotlightActionPointsOnlyPref();
+		setupSpotlightRadiusPref();
+		setupSpotlightThicknessPref();
+	}
+
+	private void setupSpotlightThicknessPref() {
+		Integer[] values = {1, 2, 3, 4, 5, 8, 10};
+		String[] entries = new String[values.length];
+		for (int i = 0; i < values.length; i++) {
+			entries[i] = values[i] + " px";
+		}
+		ListPreferenceEx thicknessPref = findPreference(settings.INTERSECTING_ROADS_THICKNESS.getId());
+		thicknessPref.setEntries(entries);
+		thicknessPref.setEntryValues(values);
+	}
+
+	private void setupSpotlightPref() {
+		SwitchPreferenceEx spotlightPref = findPreference(settings.SPOTLIGHT_NAVIGATION.getId());
+		spotlightPref.setTitle(getString(R.string.spotlight_navigation));
+		spotlightPref.setDescription(getString(R.string.spotlight_navigation_descr));
+	}
+
+	private void setupSpotlightActionPointsOnlyPref() {
+		SwitchPreferenceEx maneuverOnlyPref = findPreference(settings.SPOTLIGHT_ACTION_POINTS_ONLY.getId());
+		maneuverOnlyPref.setTitle(getString(R.string.intersecting_roads_maneuver_only));
+		maneuverOnlyPref.setDescription(getString(R.string.intersecting_roads_maneuver_only_descr));
+	}
+
+	private void setupSpotlightRadiusPref() {
+		Integer[] values = {10, 20, 30, 50, 100, 200};
+		String[] entries = new String[values.length];
+		for (int i = 0; i < values.length; i++) {
+			entries[i] = net.osmand.plus.utils.OsmAndFormatter.getFormattedDistance(values[i], getApp());
+		}
+		ListPreferenceEx radiusPref = findPreference(settings.INTERSECTING_ROADS_RADIUS.getId());
+		radiusPref.setEntries(entries);
+		radiusPref.setEntryValues(values);
 	}
 
 	private void setupHudStylePref() {
