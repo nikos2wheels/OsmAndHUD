@@ -21,6 +21,7 @@ import androidx.core.content.ContextCompat;
 import net.osmand.plus.R;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.routing.NextDirectionInfo;
+import net.osmand.plus.routing.RouteCalculationResult;
 import net.osmand.plus.routing.data.AnnounceTimeDistances;
 import net.osmand.plus.settings.backend.ApplicationMode;
 import net.osmand.plus.settings.backend.preferences.CommonPreference;
@@ -36,6 +37,8 @@ import net.osmand.plus.views.mapwidgets.WidgetType;
 import net.osmand.plus.views.mapwidgets.WidgetsPanel;
 import net.osmand.plus.views.mapwidgets.widgetinterfaces.ISupportWidgetResizing;
 import net.osmand.plus.views.mapwidgets.widgetstates.ResizableWidgetState;
+import net.osmand.data.RotatedTileBox;
+import net.osmand.Location;
 import net.osmand.router.TurnType;
 
 import java.util.Arrays;
@@ -176,13 +179,15 @@ public class HudLaneGuidanceWidget extends MapWidget implements ISupportWidgetRe
         int distance = 0;
         TurnType turnType = null;
         String exitNumber = null;
+        NextDirectionInfo laneInfo = null;
+        NextDirectionInfo turnInfo = null;
 
         boolean followingMode = routingHelper.isFollowingMode()
                 || app.getLocationProvider().getLocationSimulation().isRouteAnimating();
         boolean calculated = routingHelper.isRouteCalculated();
 
         if (followingMode && calculated && !routingHelper.isDeviatedFromRoute()) {
-            NextDirectionInfo laneInfo = routingHelper.getNextRouteDirectionInfo(new NextDirectionInfo(), false);
+            laneInfo = routingHelper.getNextRouteDirectionInfo(new NextDirectionInfo(), false);
             if (laneInfo != null && laneInfo.directionInfo != null) {
                 TurnType ltt = laneInfo.directionInfo.getTurnType();
                 if (timeDistances == null || timeDistances.getAppMode() != routingHelper.getAppMode()) {
@@ -199,7 +204,7 @@ public class HudLaneGuidanceWidget extends MapWidget implements ISupportWidgetRe
                 }
             }
 
-            NextDirectionInfo turnInfo = routingHelper.getNextRouteDirectionInfo(new NextDirectionInfo(), true);
+            turnInfo = routingHelper.getNextRouteDirectionInfo(new NextDirectionInfo(), true);
             if (turnInfo != null && turnInfo.directionInfo != null) {
                 if ((lanes == null || lanes.length == 0) && settings.HUD_SHOW_NEXT_TURN.getModeValue(routingHelper.getAppMode())) {
                     turnType = turnInfo.directionInfo.getTurnType();
@@ -225,6 +230,49 @@ public class HudLaneGuidanceWidget extends MapWidget implements ISupportWidgetRe
         boolean showLanes = lanes != null && lanes.length > 0;
         boolean showTurn = !showLanes && turnType != null;
         boolean visible = followingMode && calculated && (showLanes || showTurn);
+
+        if (visible && showTurn) {
+            RouteCalculationResult route = routingHelper.getRoute();
+            if (route != null && turnInfo != null && turnInfo.directionInfo != null) {
+                Location turnLoc = route.getLocationFromRouteDirection(turnInfo.directionInfo);
+                Location carLoc = routingHelper.getLastProjection();
+                if (carLoc == null) {
+                    carLoc = app.getLocationProvider().getLastKnownLocation();
+                }
+
+                if (turnLoc != null && carLoc != null) {
+                    RotatedTileBox tileBox = mapActivity.getMapView().getCurrentRotatedTileBox();
+                    if (tileBox != null) {
+                        // 1. Screen coordinates for Turn
+                        float turnPixY = tileBox.getPixYFromLatLon(turnLoc.getLatitude(), turnLoc.getLongitude());
+                        float turnPixX = tileBox.getPixXFromLatLon(turnLoc.getLatitude(), turnLoc.getLongitude());
+
+                        // 2. Screen coordinates for Car
+                        float carPixY = tileBox.getPixYFromLatLon(carLoc.getLatitude(), carLoc.getLongitude());
+                        float carPixX = tileBox.getPixXFromLatLon(carLoc.getLatitude(), carLoc.getLongitude());
+
+                        // 3. Screen coordinates for Widget Center-Top
+                        float widgetY = 0;
+                        float widgetX = tileBox.getPixWidth() / 2f;
+                        Float savedYRatio = getVerticalPositionPref().get();
+                        View root = mapActivity.findViewById(android.R.id.content);
+                        if (savedYRatio != null && savedYRatio >= 0 && root != null) {
+                            widgetY = savedYRatio * root.getHeight();
+                        } else {
+                            widgetY = view.getY();
+                        }
+
+                        // 4. Compare Total (Straight-Line) Screen Distances
+                        double distCarToTurn = Math.sqrt(Math.pow(carPixX - turnPixX, 2) + Math.pow(carPixY - turnPixY, 2));
+                        double distCarToWidget = Math.sqrt(Math.pow(carPixX - widgetX, 2) + Math.pow(carPixY - widgetY, 2));
+
+                        if (distCarToTurn <= distCarToWidget) {
+                            visible = false;
+                        }
+                    }
+                }
+            }
+        }
 
         if (visible) {
             distanceText.setVisibility(View.VISIBLE);
@@ -367,19 +415,19 @@ public class HudLaneGuidanceWidget extends MapWidget implements ISupportWidgetRe
 
         @Override
         public int getIntrinsicWidth() {
-            return (int) (super.getIntrinsicWidth() + strokeWidth * 8);
+            return (int) (super.getIntrinsicWidth() + strokeWidth * 2);
         }
 
         @Override
         public int getIntrinsicHeight() {
-            return (int) (super.getIntrinsicHeight() + strokeWidth * 8);
+            return (int) (size + strokeWidth * 2);
         }
 
         @Override
         public void draw(@NonNull Canvas canvas) {
             if (lanes != null && lanes.length > 0) {
                 canvas.save();
-                canvas.translate(strokeWidth * 4, strokeWidth * 4);
+                canvas.translate(strokeWidth, strokeWidth);
                 for (int i = 0; i < lanes.length; i++) {
                     if ((lanes[i] & 1) == 1) {
                         paintRouteDirection.setColor(ContextCompat.getColor(ctx, R.color.HUD_nav_arrow));
@@ -499,18 +547,18 @@ public class HudLaneGuidanceWidget extends MapWidget implements ISupportWidgetRe
 
         @Override
         public int getIntrinsicWidth() {
-            return (int) (size + strokeWidth * 8);
+            return (int) (size + strokeWidth * 2);
         }
 
         @Override
         public int getIntrinsicHeight() {
-            return (int) (size + strokeWidth * 8);
+            return (int) (size + strokeWidth * 2);
         }
 
         @Override
         public void draw(@NonNull Canvas canvas) {
             canvas.save();
-            canvas.translate(strokeWidth * 4, strokeWidth * 4);
+            canvas.translate(strokeWidth, strokeWidth);
             super.draw(canvas);
             canvas.restore();
         }
