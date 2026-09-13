@@ -18,9 +18,11 @@ public class HudLaneGuidanceWidgetInfoFragment extends BaseResizableWidgetSettin
 
     private static final String SHOW_EXIT_NUMBERS = "hud_show_exit_numbers";
     private static final String SHOW_NEXT_TURN = "hud_show_next_turn";
+    private static final String DIST_NEXT_TO_ARROWS = "hud_lane_dist_next_to_arrows";
 
     private boolean showExitNumbers;
     private boolean showNextTurn;
+    private boolean distNextToArrows;
 
     @NonNull
     @Override
@@ -33,6 +35,7 @@ public class HudLaneGuidanceWidgetInfoFragment extends BaseResizableWidgetSettin
         super.initParams(bundle);
         showExitNumbers = bundle.getBoolean(SHOW_EXIT_NUMBERS, settings.HUD_SHOW_EXIT_NUMBERS.getModeValue(appMode));
         showNextTurn = bundle.getBoolean(SHOW_NEXT_TURN, settings.HUD_SHOW_NEXT_TURN.getModeValue(appMode));
+        distNextToArrows = bundle.getBoolean(DIST_NEXT_TO_ARROWS, settings.HUD_LANE_DIST_NEXT_TO_ARROWS.getModeValue(appMode));
     }
 
     @Override
@@ -51,6 +54,10 @@ public class HudLaneGuidanceWidgetInfoFragment extends BaseResizableWidgetSettin
         View exitNumbersView = getLayoutInflater().inflate(R.layout.widget_preference_with_switch, container, false);
         container.addView(exitNumbersView);
         setupExitNumbersPref(exitNumbersView);
+
+        View distNextToArrowsView = getLayoutInflater().inflate(R.layout.widget_preference_with_switch, container, false);
+        container.addView(distNextToArrowsView);
+        setupDistNextToArrowsPref(distNextToArrowsView);
     }
 
     private void setupNextTurnPref(@NonNull View view) {
@@ -83,6 +90,22 @@ public class HudLaneGuidanceWidgetInfoFragment extends BaseResizableWidgetSettin
         view.setBackground(getPressedStateDrawable());
     }
 
+    private void setupDistNextToArrowsPref(@NonNull View view) {
+        TextView title = view.findViewById(R.id.title);
+        TextView description = view.findViewById(R.id.description);
+
+        title.setText(R.string.hud_lane_dist_next_to_arrows);
+        description.setText(R.string.hud_lane_dist_next_to_arrows_descr);
+        description.setVisibility(View.VISIBLE);
+
+        CompoundButton compoundButton = view.findViewById(R.id.compound_button);
+        compoundButton.setChecked(distNextToArrows);
+        compoundButton.setOnCheckedChangeListener((buttonView, isChecked) -> distNextToArrows = isChecked);
+
+        view.setOnClickListener(v -> compoundButton.setChecked(!compoundButton.isChecked()));
+        view.setBackground(getPressedStateDrawable());
+    }
+
     @Override
     protected void onWidgetSizeChanged() {
         if (widgetSizePref != null && selectedWidgetSize != null) {
@@ -101,6 +124,7 @@ public class HudLaneGuidanceWidgetInfoFragment extends BaseResizableWidgetSettin
         super.applySettings();
         settings.HUD_SHOW_EXIT_NUMBERS.setModeValue(appMode, showExitNumbers);
         settings.HUD_SHOW_NEXT_TURN.setModeValue(appMode, showNextTurn);
+        settings.HUD_LANE_DIST_NEXT_TO_ARROWS.setModeValue(appMode, distNextToArrows);
         app.getRoutingHelper().onSettingsChanged(appMode);
     }
 
@@ -109,5 +133,6 @@ public class HudLaneGuidanceWidgetInfoFragment extends BaseResizableWidgetSettin
         super.onSaveInstanceState(outState);
         outState.putBoolean(SHOW_EXIT_NUMBERS, showExitNumbers);
         outState.putBoolean(SHOW_NEXT_TURN, showNextTurn);
+        outState.putBoolean(DIST_NEXT_TO_ARROWS, distNextToArrows);
     }
 }

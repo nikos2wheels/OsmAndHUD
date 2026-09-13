@@ -48,6 +48,7 @@ public class HudLaneGuidanceWidget extends MapWidget implements ISupportWidgetRe
 
     private ImageView imageView;
     private TextView distanceText;
+    private TextView sideDistanceText;
     private TextView exitText;
     private HudLanesDrawable lanesDrawable;
     private HudTurnDrawable turnDrawable;
@@ -99,6 +100,7 @@ public class HudLaneGuidanceWidget extends MapWidget implements ISupportWidgetRe
         super.setupView(view);
         imageView = view.findViewById(R.id.hud_guidance_image);
         distanceText = view.findViewById(R.id.hud_guidance_dist_text);
+        sideDistanceText = view.findViewById(R.id.hud_guidance_dist_text_side);
         exitText = view.findViewById(R.id.hud_guidance_exit_text);
 
         view.setOnTouchListener((v, event) -> {
@@ -167,6 +169,7 @@ public class HudLaneGuidanceWidget extends MapWidget implements ISupportWidgetRe
             default -> 1.0f;
         };
         distanceText.setTextSize(22 * scale);
+        sideDistanceText.setTextSize(22 * scale);
         exitText.setTextSize(18 * scale);
         updateDrawables();
         updateInfo(getView(), null);
@@ -275,8 +278,18 @@ public class HudLaneGuidanceWidget extends MapWidget implements ISupportWidgetRe
         }
 
         if (visible) {
-            distanceText.setVisibility(View.VISIBLE);
-            distanceText.setText(OsmAndFormatter.getFormattedDistance(distance, app, OsmAndFormatterParams.USE_LOWER_BOUNDS));
+            String distStr = OsmAndFormatter.getFormattedDistance(distance, app, OsmAndFormatterParams.USE_LOWER_BOUNDS);
+            boolean distNextToArrows = settings.HUD_LANE_DIST_NEXT_TO_ARROWS.get();
+
+            if (distNextToArrows) {
+                sideDistanceText.setVisibility(View.VISIBLE);
+                sideDistanceText.setText(distStr);
+                distanceText.setVisibility(View.GONE);
+            } else {
+                distanceText.setVisibility(View.VISIBLE);
+                distanceText.setText(distStr);
+                sideDistanceText.setVisibility(View.GONE);
+            }
 
             imageView.setImageDrawable(null);
             if (showLanes) {

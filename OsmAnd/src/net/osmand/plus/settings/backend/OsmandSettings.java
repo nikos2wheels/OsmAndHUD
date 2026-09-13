@@ -1481,6 +1481,7 @@ public class OsmandSettings {
 	public final OsmandPreference<Boolean> MAP_EMPTY_STATE_ALLOWED = new BooleanPreference(this, "map_empty_state_allowed", false).makeProfile().cache();
 
 	public final CommonPreference<Boolean> HUD_MAP_STYLE = registerBooleanPreference("hud_map_style", false).makeProfile();
+	public final CommonPreference<Boolean> HUD_LANE_DIST_NEXT_TO_ARROWS = registerBooleanPreference("hud_lane_dist_next_to_arrows", false).makeProfile();
 
 	public final CommonPreference<Boolean> SPOTLIGHT_NAVIGATION = registerBooleanPreference("spotlight_navigation", true).makeProfile();
 	public final CommonPreference<Integer> INTERSECTING_ROADS_RADIUS = registerIntPreference("intersecting_roads_radius", 50).makeProfile();
