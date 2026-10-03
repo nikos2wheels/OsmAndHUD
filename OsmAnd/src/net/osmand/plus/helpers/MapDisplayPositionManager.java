@@ -273,6 +273,8 @@ public class MapDisplayPositionManager implements ViewportListener {
 	private MapPosition getPositionFromPreferences() {
 		if (useCenterByDefault() || (useAutomaticByDefault() && useCenterForAutomatic())) {
 			return MapPosition.CENTER;
+		} else if (settings.POSITION_PLACEMENT_ON_MAP.get() == OsmandSettings.POSITION_PLACEMENT_BOTTOM_QUARTER) {
+			return MapPosition.MIDDLE_BOTTOM;
 		} else {
 			return MapPosition.BOTTOM;
 		}

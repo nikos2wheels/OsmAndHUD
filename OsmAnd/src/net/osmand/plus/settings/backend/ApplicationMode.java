@@ -102,6 +102,10 @@ public class ApplicationMode {
 			.icon(R.drawable.ic_action_horse)
 			.description(R.string.horseback_riding).reg();
 
+	public static final ApplicationMode HUD_BW = create(CAR, R.string.app_mode_hud_bw, "hud_bw")
+			.icon(R.drawable.ic_action_car_dark)
+			.description(R.string.app_mode_hud_bw_descr).reg();
+
 	public static List<ApplicationMode> values(@NonNull OsmandApplication app) {
 		if (customizationListener == null) {
 			customizationListener = () -> cachedFilteredValues = new ArrayList<>();

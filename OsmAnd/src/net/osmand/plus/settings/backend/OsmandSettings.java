@@ -1001,7 +1001,7 @@ public class OsmandSettings {
 
 	public final CommonPreference<Integer> NUMBER_OF_STARTS_FIRST_XMAS_SHOWN = new IntPreference(this, "number_of_starts_first_xmas_shown", 0).makeGlobal();
 
-	public final OsmandPreference<String> AVAILABLE_APP_MODES = new StringPreference(this, "available_application_modes", "car,bicycle,pedestrian,public_transport,") {
+	public final OsmandPreference<String> AVAILABLE_APP_MODES = new StringPreference(this, "available_application_modes", "car,bicycle,pedestrian,public_transport,hud_bw,") {
 
 		@Override
 		public void readFromJson(JSONObject json, ApplicationMode appMode) throws JSONException {
@@ -1890,6 +1890,7 @@ public class OsmandSettings {
 		for (ApplicationMode mode : ApplicationMode.allPossibleValues()) {
 			MAP_INFO_CONTROLS.setModeDefaultValue(mode, "");
 		}
+		MAP_INFO_CONTROLS.setModeDefaultValue(ApplicationMode.HUD_BW, "-next_next_turn;-next_turn;-map_markers_top;-lanes;-street_name;-route_info;");
 	}
 
 	public CommonPreference<String> getMapInfoControls(@Nullable ScreenLayoutMode layoutMode) {
@@ -2008,10 +2009,14 @@ public class OsmandSettings {
 	public static final int POSITION_PLACEMENT_AUTOMATIC = 0;
 	public static final int POSITION_PLACEMENT_CENTER = 1;
 	public static final int POSITION_PLACEMENT_BOTTOM = 2;
+	public static final int POSITION_PLACEMENT_BOTTOM_QUARTER = 3;
 	public final CommonPreference<Integer> POSITION_PLACEMENT_ON_MAP = new IntPreference(this, "position_placement_on_map", 0) {
 
 		@Override
 		public Integer getProfileDefaultValue(ApplicationMode mode) {
+			if (mode == ApplicationMode.HUD_BW) {
+				return POSITION_PLACEMENT_BOTTOM_QUARTER;
+			}
 			// By default display position shifts to the bottom part of the screen
 			// only if the "Map orientation" was set to "Movement direction".
 			return 0;
@@ -3209,6 +3214,17 @@ public class OsmandSettings {
 	{
 		RENDERER.setModeDefaultValue(ApplicationMode.BOAT, RendererRegistry.NAUTICAL_RENDER);
 		RENDERER.setModeDefaultValue(ApplicationMode.SKI, RendererRegistry.WINTER_SKI_RENDER);
+		RENDERER.setModeDefaultValue(ApplicationMode.HUD_BW, RendererRegistry.BW_THIN_LINES_RENDER);
+
+		DAYNIGHT_MODE.setModeDefaultValue(ApplicationMode.HUD_BW, DayNightMode.NIGHT);
+		VIEW_ANGLE_VISIBILITY.setModeDefaultValue(ApplicationMode.HUD_BW, MarkerDisplayOption.RESTING);
+		LOCATION_RADIUS_VISIBILITY.setModeDefaultValue(ApplicationMode.HUD_BW, MarkerDisplayOption.RESTING_NAVIGATION);
+		SHOW_SPEEDOMETER.setModeDefaultValue(ApplicationMode.HUD_BW, false);
+
+		HUD_LANE_DIST_NEXT_TO_ARROWS.setModeDefaultValue(ApplicationMode.HUD_BW, true);
+		HUD_SHOW_EXIT_NUMBERS.setModeDefaultValue(ApplicationMode.HUD_BW, true);
+		HUD_SHOW_NEXT_TURN.setModeDefaultValue(ApplicationMode.HUD_BW, true);
+		POSITION_PLACEMENT_ON_MAP.setModeDefaultValue(ApplicationMode.HUD_BW, POSITION_PLACEMENT_BOTTOM_QUARTER);
 	}
 
 	public boolean getRenderBooleanPropertyValue(@NonNull RenderingRuleProperty property) {

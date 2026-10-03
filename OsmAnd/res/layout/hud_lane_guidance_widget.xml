@@ -7,7 +7,10 @@
     android:layout_gravity="center_horizontal|top"
     android:background="#000000"
     android:orientation="vertical"
-    android:padding="0dp"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
     android:gravity="center_horizontal"
     android:clickable="true"
     android:focusable="true">
@@ -40,31 +43,73 @@
             tools:text="14"
             tools:visibility="visible" />
 
-        <TextView
-            android:id="@+id/hud_guidance_dist_text_side"
+        <LinearLayout
+            android:id="@+id/hud_guidance_dist_container_side"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:maxLines="1"
-            android:textColor="#FFFFFF"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:includeFontPadding="false"
+            android:orientation="horizontal"
+            android:gravity="bottom"
+            android:baselineAligned="true"
             android:visibility="gone"
-            tools:text="100 m"
-            tools:visibility="visible" />
+            tools:visibility="visible">
+
+            <TextView
+                android:id="@+id/hud_guidance_dist_num_side"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:textColor="#FFFFFF"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:includeFontPadding="false"
+                tools:text="100" />
+
+            <TextView
+                android:id="@+id/hud_guidance_dist_unit_side"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="3dp"
+                android:maxLines="1"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:includeFontPadding="false"
+                tools:text="m" />
+        </LinearLayout>
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/hud_guidance_dist_text"
+    <LinearLayout
+        android:id="@+id/hud_guidance_dist_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="-6dp"
-        android:maxLines="1"
-        android:textColor="#FFFFFF"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:includeFontPadding="false"
-        tools:text="100 m" />
+        android:layout_marginTop="-2dp"
+        android:orientation="horizontal"
+        android:gravity="bottom"
+        android:baselineAligned="true">
+
+        <TextView
+            android:id="@+id/hud_guidance_dist_num"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:textColor="#FFFFFF"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:includeFontPadding="false"
+            tools:text="100" />
+
+        <TextView
+            android:id="@+id/hud_guidance_dist_unit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="3dp"
+            android:maxLines="1"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:includeFontPadding="false"
+            tools:text="m" />
+    </LinearLayout>
 
 </LinearLayout>

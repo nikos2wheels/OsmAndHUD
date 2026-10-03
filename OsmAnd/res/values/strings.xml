@@ -28,6 +28,8 @@
 	<string name="spotlight_filter_local">Minor Local Roads</string>
 	<string name="hud_lane_guidance">HUD Lanes/Next Turn</string>
 	<string name="hud_lane_guidance_desc">Displays HUD Lane guidance and Next Turn arrows</string>
+	<string name="app_mode_hud_bw">HUD Profile</string>
+	<string name="app_mode_hud_bw_descr">Head-Up Display profile with high-contrast black and white map style</string>
 	<string name="hud_show_exit_numbers">Show exit numbers</string>
 	<string name="hud_show_next_turn">Show next turn arrows</string>
 	<string name="share_favorites_media_preparation_failed">Couldn\'t include attached media. Sharing points only.</string>
@@ -5570,6 +5572,7 @@ Download tile maps directly, or copy them as SQLite database files to OsmAnd\'s 
     <string name="app_mode_pedestrian">Walking</string>
     <string name="position_on_map_center">Center</string>
     <string name="position_on_map_bottom">Bottom</string>
+    <string name="position_on_map_bottom_quarter">Mid bottom</string>
     <string name="navigate_point_latitude">Latitude</string>
     <string name="navigate_point_longitude">Longitude</string>
     <string name="navigate_point_format_D">DDD.DDDDD</string>

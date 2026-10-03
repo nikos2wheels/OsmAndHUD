@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
 import android.view.MotionEvent;
@@ -47,8 +46,12 @@ import java.util.List;
 public class HudLaneGuidanceWidget extends MapWidget implements ISupportWidgetResizing {
 
     private ImageView imageView;
-    private TextView distanceText;
-    private TextView sideDistanceText;
+    private View distanceContainer;
+    private TextView distanceNumText;
+    private TextView distanceUnitText;
+    private View sideDistanceContainer;
+    private TextView sideDistanceNumText;
+    private TextView sideDistanceUnitText;
     private TextView exitText;
     private HudLanesDrawable lanesDrawable;
     private HudTurnDrawable turnDrawable;
@@ -99,8 +102,14 @@ public class HudLaneGuidanceWidget extends MapWidget implements ISupportWidgetRe
     protected void setupView(@NonNull View view) {
         super.setupView(view);
         imageView = view.findViewById(R.id.hud_guidance_image);
-        distanceText = view.findViewById(R.id.hud_guidance_dist_text);
-        sideDistanceText = view.findViewById(R.id.hud_guidance_dist_text_side);
+        distanceContainer = view.findViewById(R.id.hud_guidance_dist_container);
+        distanceNumText = view.findViewById(R.id.hud_guidance_dist_num);
+        distanceUnitText = view.findViewById(R.id.hud_guidance_dist_unit);
+
+        sideDistanceContainer = view.findViewById(R.id.hud_guidance_dist_container_side);
+        sideDistanceNumText = view.findViewById(R.id.hud_guidance_dist_num_side);
+        sideDistanceUnitText = view.findViewById(R.id.hud_guidance_dist_unit_side);
+
         exitText = view.findViewById(R.id.hud_guidance_exit_text);
 
         view.setOnTouchListener((v, event) -> {
@@ -144,15 +153,24 @@ public class HudLaneGuidanceWidget extends MapWidget implements ISupportWidgetRe
     private void loadSavedPosition() {
         View v = getView();
         Float savedY = getVerticalPositionPref().get();
-        if (savedY != null && savedY >= 0) {
-            v.post(() -> {
-                View parent = (View) v.getParent();
-                if (parent != null) {
-                    float screenHeight = parent.getHeight();
-                    v.setY(savedY * screenHeight);
+        v.post(() -> {
+            View parent = (View) v.getParent();
+            if (parent != null) {
+                float screenHeight = parent.getHeight();
+                if (screenHeight > 0) {
+                    if (savedY != null && savedY >= 0) {
+                        v.setY(savedY * screenHeight);
+                    } else {
+                        android.graphics.PointF mapRatio = mapActivity.getMapViewTrackingUtilities().getMapDisplayPositionManager().getMapRatio();
+                        float displayPosY = mapRatio.y * screenHeight;
+                        float ydpi = mapActivity.getResources().getDisplayMetrics().ydpi;
+                        float mm40Px = (40.0f / 25.4f) * ydpi;
+                        float defaultY = Math.max(0, displayPosY - mm40Px);
+                        v.setY(defaultY);
+                    }
                 }
-            });
-        }
+            }
+        });
     }
 
     private CommonPreference<Float> getVerticalPositionPref() {
@@ -168,9 +186,11 @@ public class HudLaneGuidanceWidget extends MapWidget implements ISupportWidgetRe
             case LARGE -> 1.25f;
             default -> 1.0f;
         };
-        distanceText.setTextSize(22 * scale);
-        sideDistanceText.setTextSize(22 * scale);
-        exitText.setTextSize(18 * scale);
+        if (distanceNumText != null) distanceNumText.setTextSize(22 * scale);
+        if (distanceUnitText != null) distanceUnitText.setTextSize(14 * scale);
+        if (sideDistanceNumText != null) sideDistanceNumText.setTextSize(22 * scale);
+        if (sideDistanceUnitText != null) sideDistanceUnitText.setTextSize(14 * scale);
+        if (exitText != null) exitText.setTextSize(18 * scale);
         updateDrawables();
         updateInfo(getView(), null);
     }
@@ -278,17 +298,27 @@ public class HudLaneGuidanceWidget extends MapWidget implements ISupportWidgetRe
         }
 
         if (visible) {
-            String distStr = OsmAndFormatter.getFormattedDistance(distance, app, OsmAndFormatterParams.USE_LOWER_BOUNDS);
+            net.osmand.plus.utils.FormattedValue fv = OsmAndFormatter.getFormattedDistanceValue(distance, app, OsmAndFormatterParams.USE_LOWER_BOUNDS);
             boolean distNextToArrows = settings.HUD_LANE_DIST_NEXT_TO_ARROWS.get();
 
             if (distNextToArrows) {
-                sideDistanceText.setVisibility(View.VISIBLE);
-                sideDistanceText.setText(distStr);
-                distanceText.setVisibility(View.GONE);
+                if (sideDistanceContainer != null) {
+                    sideDistanceContainer.setVisibility(View.VISIBLE);
+                    if (sideDistanceNumText != null) sideDistanceNumText.setText(fv.value);
+                    if (sideDistanceUnitText != null) sideDistanceUnitText.setText(fv.unit);
+                }
+                if (distanceContainer != null) {
+                    distanceContainer.setVisibility(View.GONE);
+                }
             } else {
-                distanceText.setVisibility(View.VISIBLE);
-                distanceText.setText(distStr);
-                sideDistanceText.setVisibility(View.GONE);
+                if (distanceContainer != null) {
+                    distanceContainer.setVisibility(View.VISIBLE);
+                    if (distanceNumText != null) distanceNumText.setText(fv.value);
+                    if (distanceUnitText != null) distanceUnitText.setText(fv.unit);
+                }
+                if (sideDistanceContainer != null) {
+                    sideDistanceContainer.setVisibility(View.GONE);
+                }
             }
 
             imageView.setImageDrawable(null);
@@ -308,8 +338,9 @@ public class HudLaneGuidanceWidget extends MapWidget implements ISupportWidgetRe
             }
         } else {
             imageView.setImageDrawable(null);
-            distanceText.setVisibility(View.GONE);
-            exitText.setVisibility(View.GONE);
+            if (distanceContainer != null) distanceContainer.setVisibility(View.GONE);
+            if (sideDistanceContainer != null) sideDistanceContainer.setVisibility(View.GONE);
+            if (exitText != null) exitText.setVisibility(View.GONE);
         }
         
         if (view.getLayoutParams() != null) {

@@ -8,7 +8,7 @@ public enum MapPosition {
 
 	MIDDLE_TOP(0.25f),
 	CENTER(0.5f),
-	MIDDLE_BOTTOM(0.70f),
+	MIDDLE_BOTTOM(0.75f),
 	BOTTOM(0.85f),
 	LANDSCAPE_MIDDLE_END(0.5f);
 
