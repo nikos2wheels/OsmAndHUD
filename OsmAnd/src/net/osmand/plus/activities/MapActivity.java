@@ -269,6 +269,8 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		settings.SPOTLIGHT_FILTER_ACCESS.addListener(spotlightSettingsListener);
 		settings.SPOTLIGHT_FILTER_LOCAL.addListener(spotlightSettingsListener);
 
+		updateHdrWindowMode();
+
 		setContentView(R.layout.main);
 		enterToFullScreen();
 		// Navigation Drawer
@@ -1829,8 +1831,27 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 	}
 
 	private void checkHudStyle() {
+		updateHdrWindowMode();
 		if (settings.HUD_MAP_STYLE.get()) {
 			updateMapSettings(true);
+		}
+	}
+
+	public void updateHdrWindowMode() {
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+			boolean isHudMode = settings.HUD_MAP_STYLE.get();
+			int targetColorMode = isHudMode 
+					? android.content.pm.ActivityInfo.COLOR_MODE_HDR 
+					: android.content.pm.ActivityInfo.COLOR_MODE_DEFAULT;
+			
+			if (getWindow().getColorMode() != targetColorMode) {
+				getWindow().setColorMode(targetColorMode);
+			}
+
+			if (android.os.Build.VERSION.SDK_INT >= 34) {
+				float targetHeadroom = isHudMode ? 100.0f : 1.0f;
+				getWindow().setDesiredHdrHeadroom(targetHeadroom);
+			}
 		}
 	}
 

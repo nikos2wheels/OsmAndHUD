@@ -161,7 +161,11 @@ public class MapDisplayPositionManager implements ViewportListener {
 			} else {
 				mapPosition = getPositionFromPreferences();
 				visibleMapRect = calculateVisibleMapRect();
-				projectedMapRatio = projectRatioToVisibleMapRect(mapPosition.getRatio(shiftedX, isRtl()));
+				if (mapPosition == MapPosition.BOTTOM || mapPosition == MapPosition.MIDDLE_BOTTOM) {
+					projectedMapRatio = null;
+				} else {
+					projectedMapRatio = projectRatioToVisibleMapRect(mapPosition.getRatio(shiftedX, isRtl()));
+				}
 			}
 		}
 

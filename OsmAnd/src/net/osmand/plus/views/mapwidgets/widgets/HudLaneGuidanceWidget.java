@@ -112,6 +112,17 @@ public class HudLaneGuidanceWidget extends MapWidget implements ISupportWidgetRe
 
         exitText = view.findViewById(R.id.hud_guidance_exit_text);
 
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            float[] hdrMatrix = new float[] {
+                100.0f, 0, 0, 0, 0,
+                0, 100.0f, 0, 0, 0,
+                0, 0, 100.0f, 0, 0,
+                0, 0, 0, 1.0f, 0
+            };
+            android.graphics.ColorMatrixColorFilter filter = new android.graphics.ColorMatrixColorFilter(hdrMatrix);
+            view.setRenderEffect(android.graphics.RenderEffect.createColorFilterEffect(filter));
+        }
+
         view.setOnTouchListener((v, event) -> {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN -> {
@@ -454,7 +465,11 @@ public class HudLaneGuidanceWidget extends MapWidget implements ISupportWidgetRe
         public HudLanesDrawable(@NonNull Context ctx, float strokeWidth, float size, float imgMinDeltaPx, float imgMarginPx, float laneSizePx) {
             super(ctx, strokeWidth, size, imgMinDeltaPx, imgMarginPx, laneSizePx);
             this.strokeWidth = strokeWidth;
-            paintBlack.setColor(ContextCompat.getColor(ctx, R.color.HUD_nav_arrow_stroke_color));
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                paintBlack.setColor(net.osmand.plus.views.layers.RouteLayer.createHdrWhiteColor(100.0f));
+            } else {
+                paintBlack.setColor(ContextCompat.getColor(ctx, R.color.HUD_nav_arrow_stroke_color));
+            }
         }
 
         @Override
@@ -474,7 +489,11 @@ public class HudLaneGuidanceWidget extends MapWidget implements ISupportWidgetRe
                 canvas.translate(strokeWidth, strokeWidth);
                 for (int i = 0; i < lanes.length; i++) {
                     if ((lanes[i] & 1) == 1) {
-                        paintRouteDirection.setColor(ContextCompat.getColor(ctx, R.color.HUD_nav_arrow));
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                            paintRouteDirection.setColor(net.osmand.plus.views.layers.RouteLayer.createHdrWhiteColor(100.0f));
+                        } else {
+                            paintRouteDirection.setColor(ContextCompat.getColor(ctx, R.color.HUD_nav_arrow));
+                        }
                     } else {
                         paintRouteDirection.setColor(ContextCompat.getColor(ctx, R.color.HUD_nav_arrow_distant));
                     }
@@ -562,7 +581,12 @@ public class HudLaneGuidanceWidget extends MapWidget implements ISupportWidgetRe
             this.ctx = activity;
             this.size = size;
             this.strokeWidth = strokeWidth;
-            paintRouteDirectionOutlay.setColor(ContextCompat.getColor(activity, R.color.HUD_nav_arrow_stroke_color));
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                paintRouteDirection.setColor(net.osmand.plus.views.layers.RouteLayer.createHdrWhiteColor(100.0f));
+                paintRouteDirectionOutlay.setColor(net.osmand.plus.views.layers.RouteLayer.createHdrWhiteColor(100.0f));
+            } else {
+                paintRouteDirectionOutlay.setColor(ContextCompat.getColor(activity, R.color.HUD_nav_arrow_stroke_color));
+            }
             paintRouteDirectionOutlay.setStrokeWidth(strokeWidth);
         }
 
@@ -573,7 +597,9 @@ public class HudLaneGuidanceWidget extends MapWidget implements ISupportWidgetRe
 
         public void setTurnImminent(int turnImminent) {
             this.imminent = turnImminent;
-            if (turnImminent == 0) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                paintRouteDirection.setColor(net.osmand.plus.views.layers.RouteLayer.createHdrWhiteColor(100.0f));
+            } else if (turnImminent == 0) {
                 paintRouteDirection.setColor(ContextCompat.getColor(ctx, R.color.HUD_nav_arrow_imminent));
             } else {
                 paintRouteDirection.setColor(ContextCompat.getColor(ctx, R.color.HUD_nav_arrow));

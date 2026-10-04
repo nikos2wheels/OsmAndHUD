@@ -768,9 +768,9 @@ public class RouteLayer extends BaseRouteLayer implements IContextMenuProvider {
 	@Override
 	public void onDraw(Canvas canvas, RotatedTileBox tileBox, DrawSettings settings) {
 		OsmandSettings s = getApplication().getSettings();
-		if (s.SPOTLIGHT_NAVIGATION.get() && helper.isRouteCalculated()) {
+		if ((s.SPOTLIGHT_NAVIGATION.get() || s.HUD_MAP_STYLE.get()) && helper.isRouteCalculated()) {
 			MapRendererView mapRenderer = getMapRenderer();
-			if (mapRenderer != null) {
+			if (mapRenderer != null && !s.HUD_MAP_STYLE.get()) {
 				// We rely on HUD.render.xml to provide the black background and route line.
 				updateSpotlightNative(mapRenderer);
 			} else {
@@ -949,21 +949,53 @@ public class RouteLayer extends BaseRouteLayer implements IContextMenuProvider {
 	private void setSpotlightNavigation(MapRendererView mapRenderer, boolean on) {
 	}
 
+	public static long createHdrWhiteColor(float brightnessMultiplier) {
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+			android.graphics.ColorSpace extendedSrgb = android.graphics.ColorSpace.get(android.graphics.ColorSpace.Named.EXTENDED_SRGB);
+			return android.graphics.Color.valueOf(
+					brightnessMultiplier,
+					brightnessMultiplier,
+					brightnessMultiplier,
+					1.0f,
+					extendedSrgb
+			).pack();
+		}
+		return android.graphics.Color.WHITE;
+	}
+
 	private void drawRouteLine(Canvas canvas, RotatedTileBox tileBox) {
-		List<Location> locations = helper.getRoute().getImmutableAllLocations();
+		RouteCalculationResult route = helper.getRoute();
+		List<Location> locations = route.getImmutableAllLocations();
 		if (locations.isEmpty()) return;
+
+		int currentIdx = Math.max(0, route.getCurrentRoute());
+		Location lastProjection = helper.getLastProjection();
 
 		Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
 		p.setStyle(Paint.Style.STROKE);
-		// Use the standard yellow route color
-		p.setColor(getRouteLineColor());
+		
+		OsmandSettings s = getApplication().getSettings();
+		if (s.HUD_MAP_STYLE.get() && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+			p.setColor(createHdrWhiteColor(100.0f));
+		} else {
+			p.setColor(getRouteLineColor());
+		}
 		p.setStrokeWidth((float) getRouteLineWidth(tileBox));
 		p.setStrokeCap(Cap.ROUND);
 		p.setStrokeJoin(Paint.Join.ROUND);
 
 		Path path = new Path();
 		boolean first = true;
-		for (Location loc : locations) {
+
+		if (lastProjection != null) {
+			float x = tileBox.getPixXFromLatLon(lastProjection.getLatitude(), lastProjection.getLongitude());
+			float y = tileBox.getPixYFromLatLon(lastProjection.getLatitude(), lastProjection.getLongitude());
+			path.moveTo(x, y);
+			first = false;
+		}
+
+		for (int i = currentIdx; i < locations.size(); i++) {
+			Location loc = locations.get(i);
 			float x = tileBox.getPixXFromLatLon(loc.getLatitude(), loc.getLongitude());
 			float y = tileBox.getPixYFromLatLon(loc.getLatitude(), loc.getLongitude());
 			if (first) {
@@ -982,9 +1014,14 @@ public class RouteLayer extends BaseRouteLayer implements IContextMenuProvider {
 		if (segments == null) return;
 
 		float thickness = getApplication().getSettings().INTERSECTING_ROADS_THICKNESS.get() * getContext().getResources().getDisplayMetrics().density;
-		int color = getApplication().getSettings().INTERSECTING_ROADS_COLOR.get();
+		OsmandSettings s = getApplication().getSettings();
 		roadPaint.setStyle(Paint.Style.STROKE);
-		roadPaint.setColor(color);
+		if (s.HUD_MAP_STYLE.get() && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+			roadPaint.setColor(createHdrWhiteColor(100.0f));
+		} else {
+			int color = getApplication().getSettings().INTERSECTING_ROADS_COLOR.get();
+			roadPaint.setColor(color);
+		}
 		roadPaint.setStrokeWidth(thickness);
 		roadPaint.setStrokeCap(Cap.ROUND);
 		roadPaint.setStrokeJoin(Paint.Join.ROUND);

@@ -621,14 +621,47 @@ public class PointLocationLayer extends OsmandMapLayer
 			if (shouldShowHeading(currentMarkerState)) {
 				drawLocationHeading(canvas, locationX, locationY);
 			}
-			Float bearing = getBearingToShow(lastKnownLocation);
-			if (bearing != null) {
-				canvas.rotate(bearing - 90, locationX, locationY);
-				if (navigationIcon != null) {
-					AndroidUtils.drawScaledLayerDrawable(canvas, navigationIcon, locationX, locationY, textScale);
+			
+			OsmandSettings s = getApplication().getSettings();
+			boolean isHudMode = s.HUD_MAP_STYLE.get();
+
+			LayerDrawable iconToDraw = navigationIcon != null ? navigationIcon : locationIcon;
+			if (iconToDraw == null) {
+				String navName = getNavigationIconName(appMode);
+				String locName = getLocationIconName(appMode);
+				String iconName = !net.osmand.util.Algorithms.isEmpty(navName) ? navName : locName;
+				String iconForModel = LocationIcon.getIconForDefaultModel(iconName);
+				LocationIcon locationIconType = LocationIcon.fromName(iconForModel != null ? iconForModel : iconName, false);
+				iconToDraw = (LayerDrawable) androidx.appcompat.content.res.AppCompatResources.getDrawable(getContext(), locationIconType.getIconId());
+			}
+
+			if (iconToDraw != null) {
+				Float bearing = getBearingToShow(lastKnownLocation);
+				canvas.save();
+				if (bearing != null) {
+					canvas.rotate(bearing - 90, locationX, locationY);
 				}
-			} else if (locationIcon != null) {
-				AndroidUtils.drawScaledLayerDrawable(canvas, locationIcon, locationX, locationY, textScale);
+
+				if (isHudMode && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+					int iconWidth = (int) (iconToDraw.getIntrinsicWidth() * textScale * 2);
+					int iconHeight = (int) (iconToDraw.getIntrinsicHeight() * textScale * 2);
+					if (iconWidth <= 0) iconWidth = 100;
+					if (iconHeight <= 0) iconHeight = 100;
+					android.graphics.RectF bounds = new android.graphics.RectF(locationX - iconWidth, locationY - iconHeight, locationX + iconWidth, locationY + iconHeight);
+
+					canvas.saveLayer(bounds, null);
+					AndroidUtils.drawScaledLayerDrawable(canvas, iconToDraw, locationX, locationY, textScale);
+
+					Paint hdrPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+					hdrPaint.setColor(net.osmand.plus.views.layers.RouteLayer.createHdrWhiteColor(100.0f));
+					hdrPaint.setXfermode(new android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.SRC_IN));
+					canvas.drawRect(bounds, hdrPaint);
+					canvas.restore();
+				} else {
+					AndroidUtils.drawScaledLayerDrawable(canvas, iconToDraw, locationX, locationY, textScale);
+				}
+
+				canvas.restore();
 			}
 		}
 	}
@@ -698,7 +731,8 @@ public class PointLocationLayer extends OsmandMapLayer
 		if (view == null || (!hasMapRenderer() && tileBox.getZoom() < MIN_ZOOM) || lastKnownLocation == null) {
 			return;
 		}
-		if (!hasMapRenderer()) {
+		OsmandSettings s = getApplication().getSettings();
+		if (!hasMapRenderer() || s.HUD_MAP_STYLE.get()) {
 			drawMarkers(canvas, tileBox, lastKnownLocation);
 		}
 	}
