@@ -44,7 +44,7 @@ public class DisplayPositionAction extends QuickAction {
 	public void execute(@NonNull MapActivity mapActivity, @Nullable Bundle params) {
 		CommonPreference<Integer> pref = getPreference(mapActivity);
 		int currentState = pref.get();
-		pref.set((currentState >= 3) ? 0 : currentState + 1);
+		pref.set((currentState >= 4) ? 0 : currentState + 1);
 		mapActivity.updateLayers();
 	}
 

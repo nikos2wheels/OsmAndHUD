@@ -2011,6 +2011,7 @@ public class OsmandSettings {
 	public static final int POSITION_PLACEMENT_CENTER = 1;
 	public static final int POSITION_PLACEMENT_BOTTOM = 2;
 	public static final int POSITION_PLACEMENT_BOTTOM_QUARTER = 3;
+	public static final int POSITION_PLACEMENT_BOTTOM_RIGHT = 4;
 	public final CommonPreference<Integer> POSITION_PLACEMENT_ON_MAP = new IntPreference(this, "position_placement_on_map", 0) {
 
 		@Override

@@ -8,7 +8,9 @@ import net.osmand.data.RotatedTileBox;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.settings.backend.OsmandSettings;
+import net.osmand.plus.settings.backend.preferences.CommonPreference;
 import net.osmand.plus.settings.enums.MapPosition;
+import net.osmand.plus.settings.enums.ScreenLayoutMode;
 import net.osmand.plus.utils.AndroidUtils;
 import net.osmand.plus.views.OsmandMapTileView;
 import net.osmand.plus.views.OsmandMapTileView.ViewportListener;
@@ -161,7 +163,7 @@ public class MapDisplayPositionManager implements ViewportListener {
 			} else {
 				mapPosition = getPositionFromPreferences();
 				visibleMapRect = calculateVisibleMapRect();
-				if (mapPosition == MapPosition.BOTTOM || mapPosition == MapPosition.MIDDLE_BOTTOM) {
+				if (mapPosition == MapPosition.BOTTOM || mapPosition == MapPosition.MIDDLE_BOTTOM || mapPosition == MapPosition.BOTTOM_RIGHT) {
 					projectedMapRatio = null;
 				} else {
 					projectedMapRatio = projectRatioToVisibleMapRect(mapPosition.getRatio(shiftedX, isRtl()));
@@ -273,23 +275,36 @@ public class MapDisplayPositionManager implements ViewportListener {
 		return null;
 	}
 
+	private CommonPreference<Integer> getPositionPlacementPreference() {
+		ScreenLayoutMode layoutMode = ScreenLayoutMode.getDefault(app);
+		return settings.getLayoutPreference(settings.POSITION_PLACEMENT_ON_MAP, layoutMode);
+	}
+
 	@NonNull
 	private MapPosition getPositionFromPreferences() {
-		if (useCenterByDefault() || (useAutomaticByDefault() && useCenterForAutomatic())) {
+		CommonPreference<Integer> pref = getPositionPlacementPreference();
+		int placement = pref.get();
+		if (useCenterByDefault(placement) || (useAutomaticByDefault(placement) && useCenterForAutomatic())) {
 			return MapPosition.CENTER;
-		} else if (settings.POSITION_PLACEMENT_ON_MAP.get() == OsmandSettings.POSITION_PLACEMENT_BOTTOM_QUARTER) {
+		} else if (placement == OsmandSettings.POSITION_PLACEMENT_BOTTOM_QUARTER) {
 			return MapPosition.MIDDLE_BOTTOM;
+		} else if (placement == OsmandSettings.POSITION_PLACEMENT_BOTTOM_RIGHT) {
+			ScreenLayoutMode layoutMode = ScreenLayoutMode.getDefault(app);
+			if (layoutMode == ScreenLayoutMode.PORTRAIT) {
+				return MapPosition.BOTTOM;
+			}
+			return MapPosition.BOTTOM_RIGHT;
 		} else {
 			return MapPosition.BOTTOM;
 		}
 	}
 
-	private boolean useCenterByDefault() {
-		return settings.POSITION_PLACEMENT_ON_MAP.get() == OsmandSettings.POSITION_PLACEMENT_CENTER;
+	private boolean useCenterByDefault(int placement) {
+		return placement == OsmandSettings.POSITION_PLACEMENT_CENTER;
 	}
 
-	private boolean useAutomaticByDefault() {
-		return settings.POSITION_PLACEMENT_ON_MAP.get() == OsmandSettings.POSITION_PLACEMENT_AUTOMATIC;
+	private boolean useAutomaticByDefault(int placement) {
+		return placement == OsmandSettings.POSITION_PLACEMENT_AUTOMATIC;
 	}
 
 	private boolean useCenterForAutomatic() {

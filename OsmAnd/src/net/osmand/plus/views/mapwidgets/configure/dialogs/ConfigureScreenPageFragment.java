@@ -91,7 +91,7 @@ public class ConfigureScreenPageFragment extends BaseOsmAndFragment implements Q
 		addCard(cardsContainer, new ConfigureButtonsCard(activity));
 
 		inflate(R.layout.list_item_divider, cardsContainer);
-		addCard(cardsContainer, new ConfigureOtherCard(activity));
+		addCard(cardsContainer, new ConfigureOtherCard(activity, layoutMode));
 
 		inflate(R.layout.list_item_divider, cardsContainer);
 		addCard(cardsContainer, new ConfigureActionsCard(activity));

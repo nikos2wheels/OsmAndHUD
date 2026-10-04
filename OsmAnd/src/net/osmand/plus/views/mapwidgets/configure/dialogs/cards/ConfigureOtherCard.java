@@ -7,18 +7,24 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import net.osmand.plus.R;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.helpers.AndroidUiHelper;
 import net.osmand.plus.routepreparationmenu.cards.MapBaseCard;
 import net.osmand.plus.settings.backend.ApplicationMode;
+import net.osmand.plus.settings.backend.preferences.CommonPreference;
 import net.osmand.plus.settings.controllers.MapFocusDialogController;
 import net.osmand.plus.settings.enums.MapFocus;
+import net.osmand.plus.settings.enums.ScreenLayoutMode;
 import net.osmand.plus.views.mapwidgets.configure.dialogs.DistanceByTapFragment;
 import net.osmand.plus.views.mapwidgets.configure.dialogs.SpeedometerSettingsFragment;
 
 public class ConfigureOtherCard extends MapBaseCard {
+
+	@Nullable
+	private final ScreenLayoutMode layoutMode;
 
 	@Override
 	public int getCardLayoutId() {
@@ -26,7 +32,12 @@ public class ConfigureOtherCard extends MapBaseCard {
 	}
 
 	public ConfigureOtherCard(@NonNull MapActivity mapActivity) {
+		this(mapActivity, null);
+	}
+
+	public ConfigureOtherCard(@NonNull MapActivity mapActivity, @Nullable ScreenLayoutMode layoutMode) {
 		super(mapActivity, false);
+		this.layoutMode = layoutMode;
 	}
 
 	@Override
@@ -45,9 +56,12 @@ public class ConfigureOtherCard extends MapBaseCard {
 
 	private void setupDisplayPositionButton(@NonNull ApplicationMode appMode) {
 		View button = view.findViewById(R.id.map_display_position_button);
-		button.setOnClickListener(v -> MapFocusDialogController.showDialog(getMapActivity(), appMode));
+		button.setOnClickListener(v -> MapFocusDialogController.showDialog(getMapActivity(), appMode, layoutMode));
 
-		int value = settings.POSITION_PLACEMENT_ON_MAP.getModeValue(appMode);
+		ScreenLayoutMode mode = layoutMode != null ? layoutMode : ScreenLayoutMode.getDefault(getMapActivity());
+		CommonPreference<Integer> positionPref = settings.getLayoutPreference(settings.POSITION_PLACEMENT_ON_MAP, mode);
+
+		int value = positionPref.getModeValue(appMode);
 		MapFocus mapFocus = MapFocus.valueOf(value);
 		ConfigureButtonsCard.setupButton(button, getString(R.string.display_position),
 				getString(mapFocus.getTitleId()), mapFocus.getIconId(), true, nightMode);

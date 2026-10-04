@@ -19,8 +19,10 @@ import net.osmand.plus.base.dialog.interfaces.controller.IDisplayDataProvider;
 import net.osmand.plus.base.dialog.interfaces.controller.IDialogItemSelected;
 import net.osmand.plus.settings.backend.ApplicationMode;
 import net.osmand.plus.settings.backend.OsmandSettings;
+import net.osmand.plus.settings.backend.preferences.CommonPreference;
 import net.osmand.plus.settings.bottomsheets.CustomizableSingleSelectionBottomSheet;
 import net.osmand.plus.settings.enums.MapFocus;
+import net.osmand.plus.settings.enums.ScreenLayoutMode;
 import net.osmand.plus.settings.enums.ThemeUsageContext;
 import net.osmand.plus.utils.ColorUtilities;
 import net.osmand.plus.utils.UiUtilities;
@@ -31,12 +33,15 @@ public class MapFocusDialogController extends BaseDialogController
 	public static final String PROCESS_ID = "select_map_focus";
 
 	private final ApplicationMode appMode;
+	private final ScreenLayoutMode layoutMode;
 	private final OsmandSettings settings;
 
 	public MapFocusDialogController(@NonNull OsmandApplication app,
-	                                @NonNull ApplicationMode appMode) {
+	                                @NonNull ApplicationMode appMode,
+	                                @Nullable ScreenLayoutMode layoutMode) {
 		super(app);
 		this.appMode = appMode;
+		this.layoutMode = layoutMode;
 		this.settings = app.getSettings();
 	}
 
@@ -54,10 +59,23 @@ public class MapFocusDialogController extends BaseDialogController
 		int profileColor = appMode.getProfileColor(nightMode);
 		int profileColorAlpha = ColorUtilities.getColorWithAlpha(profileColor, 0.3f);
 
+		ScreenLayoutMode mode = layoutMode != null ? layoutMode : ScreenLayoutMode.getDefault(app);
+		CommonPreference<Integer> positionPref = settings.getLayoutPreference(settings.POSITION_PLACEMENT_ON_MAP, mode);
+
 		DisplayData displayData = new DisplayData();
 		displayData.putExtra(TITLE, getString(R.string.display_position));
 		displayData.putExtra(BACKGROUND_COLOR, profileColorAlpha);
+		int itemIndex = 0;
+		int selectedItemIndex = 0;
+		int currentVal = positionPref.getModeValue(appMode);
+
 		for (MapFocus mapFocus : MapFocus.values()) {
+			if (mapFocus == MapFocus.BOTTOM_RIGHT && mode == ScreenLayoutMode.PORTRAIT) {
+				continue;
+			}
+			if (mapFocus.getValue() == currentVal) {
+				selectedItemIndex = itemIndex;
+			}
 			DisplayItem item = new DisplayItem()
 					.setTitle(getString(mapFocus.getTitleId()))
 					.setLayoutId(R.layout.bottom_sheet_item_with_bottom_descr_and_radio_btn)
@@ -72,10 +90,9 @@ public class MapFocusDialogController extends BaseDialogController
 				item.setShowBottomDivider(true, dividerStartPadding);
 			}
 			displayData.addDisplayItem(item);
+			itemIndex++;
 		}
 
-		int value = settings.POSITION_PLACEMENT_ON_MAP.getModeValue(appMode);
-		int selectedItemIndex = MapFocus.valueOf(value).ordinal();
 		displayData.putExtra(SELECTED_INDEX, selectedItemIndex);
 		return displayData;
 	}
@@ -84,13 +101,15 @@ public class MapFocusDialogController extends BaseDialogController
 	public void onDialogItemSelected(@NonNull String processId, @NonNull DisplayItem selected) {
 		Object newValue = selected.getTag();
 		if (newValue instanceof MapFocus mapFocus) {
-			settings.POSITION_PLACEMENT_ON_MAP.setModeValue(appMode, mapFocus.getValue());
+			ScreenLayoutMode mode = layoutMode != null ? layoutMode : ScreenLayoutMode.getDefault(app);
+			CommonPreference<Integer> positionPref = settings.getLayoutPreference(settings.POSITION_PLACEMENT_ON_MAP, mode);
+			positionPref.setModeValue(appMode, mapFocus.getValue());
 		}
 	}
 
-	public static void showDialog(@NonNull MapActivity mapActivity, @NonNull ApplicationMode appMode) {
+	public static void showDialog(@NonNull MapActivity mapActivity, @NonNull ApplicationMode appMode, @Nullable ScreenLayoutMode layoutMode) {
 		OsmandApplication app = mapActivity.getApp();
-		MapFocusDialogController controller = new MapFocusDialogController(app, appMode);
+		MapFocusDialogController controller = new MapFocusDialogController(app, appMode, layoutMode);
 
 		DialogManager dialogManager = app.getDialogManager();
 		dialogManager.register(PROCESS_ID, controller);

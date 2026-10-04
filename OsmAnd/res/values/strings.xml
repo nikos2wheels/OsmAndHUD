@@ -5574,6 +5574,7 @@ Download tile maps directly, or copy them as SQLite database files to OsmAnd\'s 
     <string name="position_on_map_center">Center</string>
     <string name="position_on_map_bottom">Bottom</string>
     <string name="position_on_map_bottom_quarter">Mid bottom</string>
+    <string name="position_on_map_bottom_right">Bottom right</string>
     <string name="navigate_point_latitude">Latitude</string>
     <string name="navigate_point_longitude">Longitude</string>
     <string name="navigate_point_format_D">DDD.DDDDD</string>
