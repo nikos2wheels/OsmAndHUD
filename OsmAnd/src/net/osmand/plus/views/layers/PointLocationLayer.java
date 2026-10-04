@@ -643,20 +643,45 @@ public class PointLocationLayer extends OsmandMapLayer
 				}
 
 				if (isHudMode && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-					int iconWidth = (int) (iconToDraw.getIntrinsicWidth() * textScale * 2);
-					int iconHeight = (int) (iconToDraw.getIntrinsicHeight() * textScale * 2);
-					if (iconWidth <= 0) iconWidth = 100;
-					if (iconHeight <= 0) iconHeight = 100;
-					android.graphics.RectF bounds = new android.graphics.RectF(locationX - iconWidth, locationY - iconHeight, locationX + iconWidth, locationY + iconHeight);
+					long hdrColor = net.osmand.plus.views.layers.RouteLayer.createHdrWhiteColor(100.0f);
 
-					canvas.saveLayer(bounds, null);
-					AndroidUtils.drawScaledLayerDrawable(canvas, iconToDraw, locationX, locationY, textScale);
+					int layersCount = iconToDraw.getNumberOfLayers();
+					for (int i = 0; i < layersCount; i++) {
+						android.graphics.drawable.Drawable layer = iconToDraw.getDrawable(i);
+						if (layer == null) continue;
 
-					Paint hdrPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-					hdrPaint.setColor(net.osmand.plus.views.layers.RouteLayer.createHdrWhiteColor(100.0f));
-					hdrPaint.setXfermode(new android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.SRC_IN));
-					canvas.drawRect(bounds, hdrPaint);
-					canvas.restore();
+						if (i == 1) {
+							int layerW = (int) (layer.getIntrinsicWidth() * textScale);
+							int layerH = (int) (layer.getIntrinsicHeight() * textScale);
+							if (layerW <= 0) layerW = 60;
+							if (layerH <= 0) layerH = 60;
+
+							android.graphics.RectF bounds = new android.graphics.RectF(
+									locationX - layerW, locationY - layerH, locationX + layerW, locationY + layerH);
+							canvas.saveLayer(bounds, null);
+
+							android.graphics.Rect rect = new android.graphics.Rect(locationX - layerW / 2, locationY - layerH / 2,
+									locationX + layerW / 2, locationY + layerH / 2);
+							layer.setBounds(rect);
+							layer.draw(canvas);
+
+							Paint hdrPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+							hdrPaint.setColor(hdrColor);
+							hdrPaint.setXfermode(new android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.SRC_IN));
+							canvas.drawRect(bounds, hdrPaint);
+							canvas.restore();
+						} else {
+							int layerW = (int) (layer.getIntrinsicWidth() * textScale);
+							int layerH = (int) (layer.getIntrinsicHeight() * textScale);
+							if (layerW <= 0) layerW = 60;
+							if (layerH <= 0) layerH = 60;
+
+							android.graphics.Rect rect = new android.graphics.Rect(locationX - layerW / 2, locationY - layerH / 2,
+									locationX + layerW / 2, locationY + layerH / 2);
+							layer.setBounds(rect);
+							layer.draw(canvas);
+						}
+					}
 				} else {
 					AndroidUtils.drawScaledLayerDrawable(canvas, iconToDraw, locationX, locationY, textScale);
 				}

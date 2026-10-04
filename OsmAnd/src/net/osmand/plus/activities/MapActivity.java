@@ -259,6 +259,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		trackDetailsMenu.setMapActivity(this);
 
 		settings.HUD_MAP_STYLE.addListener(hudMapStyleListener);
+		settings.HUD_ROUTE_LINE_COLOR.addListener(spotlightSettingsListener);
 		settings.SPOTLIGHT_NAVIGATION.addListener(spotlightSettingsListener);
 		settings.INTERSECTING_ROADS_RADIUS.addListener(spotlightSettingsListener);
 		settings.INTERSECTING_ROADS_THICKNESS.addListener(spotlightSettingsListener);

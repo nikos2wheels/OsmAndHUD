@@ -13,6 +13,7 @@
 -->
 	<string name="hud_map_style">HUD style</string>
 	<string name="hud_map_style_descr">Enable Head-Up Display map style (black background and white route line) during navigation</string>
+	<string name="hud_route_line_color">Route line color</string>
 	<string name="hud_lane_dist_next_to_arrows">Show distance next to the arrows</string>
 	<string name="hud_lane_dist_next_to_arrows_descr">Display distance to the right of guidance icons in HUD mode</string>
 	<string name="spotlight_navigation">Show only intersecting roads</string>

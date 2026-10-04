@@ -1482,11 +1482,12 @@ public class OsmandSettings {
 
 	public final CommonPreference<Boolean> HUD_MAP_STYLE = registerBooleanPreference("hud_map_style", false).makeProfile();
 	public final CommonPreference<Boolean> HUD_LANE_DIST_NEXT_TO_ARROWS = registerBooleanPreference("hud_lane_dist_next_to_arrows", false).makeProfile();
+	public final CommonPreference<Integer> HUD_ROUTE_LINE_COLOR = registerIntPreference("hud_route_line_color", Color.WHITE).makeProfile().makeShared();
 
 	public final CommonPreference<Boolean> SPOTLIGHT_NAVIGATION = registerBooleanPreference("spotlight_navigation", true).makeProfile();
 	public final CommonPreference<Integer> INTERSECTING_ROADS_RADIUS = registerIntPreference("intersecting_roads_radius", 50).makeProfile();
 	public final CommonPreference<Integer> INTERSECTING_ROADS_THICKNESS = registerIntPreference("intersecting_roads_thickness", 2).makeProfile();
-	public final CommonPreference<Integer> INTERSECTING_ROADS_COLOR = registerIntPreference("intersecting_roads_color", Color.WHITE).makeProfile();
+	public final CommonPreference<Integer> INTERSECTING_ROADS_COLOR = registerIntPreference("intersecting_roads_color", Color.WHITE).makeProfile().makeShared();
 	public final CommonPreference<Boolean> SPOTLIGHT_ACTION_POINTS_ONLY = registerBooleanPreference("spotlight_action_points_only", false).makeProfile();
 
 	public final CommonPreference<Boolean> SPOTLIGHT_FILTER_ENABLED = registerBooleanPreference("spotlight_filter_enabled", false).makeProfile();

@@ -15,6 +15,12 @@
 		android:summaryOn="@string/shared_string_on"
 		android:title="@string/hud_map_style" />
 
+	<net.osmand.plus.settings.preferences.ListPreferenceEx
+		android:dependency="hud_map_style"
+		android:key="hud_route_line_color"
+		android:layout="@layout/preference_with_descr"
+		android:title="@string/hud_route_line_color" />
+
 	<net.osmand.plus.settings.preferences.SwitchPreferenceEx
 		android:key="spotlight_navigation"
 		android:layout="@layout/preference_dialog_and_switch"

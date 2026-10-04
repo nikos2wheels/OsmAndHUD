@@ -949,6 +949,18 @@ public class RouteLayer extends BaseRouteLayer implements IContextMenuProvider {
 	private void setSpotlightNavigation(MapRendererView mapRenderer, boolean on) {
 	}
 
+	public static long createHdrColor(int argbColor, float brightnessMultiplier) {
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+			android.graphics.ColorSpace extendedSrgb = android.graphics.ColorSpace.get(android.graphics.ColorSpace.Named.EXTENDED_SRGB);
+			float r = (android.graphics.Color.red(argbColor) > 128 ? 1.0f : 0.0f) * brightnessMultiplier;
+			float g = (android.graphics.Color.green(argbColor) > 128 ? 1.0f : 0.0f) * brightnessMultiplier;
+			float b = (android.graphics.Color.blue(argbColor) > 128 ? 1.0f : 0.0f) * brightnessMultiplier;
+			float a = android.graphics.Color.alpha(argbColor) / 255.0f;
+			return android.graphics.Color.valueOf(r, g, b, a, extendedSrgb).pack();
+		}
+		return argbColor;
+	}
+
 	public static long createHdrWhiteColor(float brightnessMultiplier) {
 		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
 			android.graphics.ColorSpace extendedSrgb = android.graphics.ColorSpace.get(android.graphics.ColorSpace.Named.EXTENDED_SRGB);
@@ -964,6 +976,41 @@ public class RouteLayer extends BaseRouteLayer implements IContextMenuProvider {
 	}
 
 	private void drawRouteLine(Canvas canvas, RotatedTileBox tileBox) {
+		OsmandSettings s = getApplication().getSettings();
+		int routeColor = s.HUD_MAP_STYLE.get() ? s.HUD_ROUTE_LINE_COLOR.get() : getRouteLineColor();
+
+		if (s.HUD_MAP_STYLE.get() && android.os.Build.VERSION.SDK_INT >= 34) {
+			int width = tileBox.getPixWidth();
+			int height = tileBox.getPixHeight();
+			if (width > 0 && height > 0) {
+				try {
+					Bitmap baseBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+					Canvas baseCanvas = new Canvas(baseBitmap);
+					drawRouteLineInternal(baseCanvas, tileBox, routeColor);
+
+					Bitmap gainmapBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+					Canvas gainmapCanvas = new Canvas(gainmapBitmap);
+					drawRouteLineInternal(gainmapCanvas, tileBox, Color.WHITE);
+
+					android.graphics.Gainmap gainmap = new android.graphics.Gainmap(gainmapBitmap);
+					gainmap.setDisplayRatioForFullHdr(100.0f);
+					gainmap.setRatioMax(100.0f, 100.0f, 100.0f);
+					gainmap.setRatioMin(1.0f, 1.0f, 1.0f);
+
+					baseBitmap.setGainmap(gainmap);
+
+					canvas.drawBitmap(baseBitmap, 0, 0, null);
+					return;
+				} catch (Throwable e) {
+					// Fallback
+				}
+			}
+		}
+
+		drawRouteLineInternal(canvas, tileBox, routeColor);
+	}
+
+	private void drawRouteLineInternal(Canvas canvas, RotatedTileBox tileBox, int routeColor) {
 		RouteCalculationResult route = helper.getRoute();
 		List<Location> locations = route.getImmutableAllLocations();
 		if (locations.isEmpty()) return;
@@ -973,13 +1020,7 @@ public class RouteLayer extends BaseRouteLayer implements IContextMenuProvider {
 
 		Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
 		p.setStyle(Paint.Style.STROKE);
-		
-		OsmandSettings s = getApplication().getSettings();
-		if (s.HUD_MAP_STYLE.get() && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-			p.setColor(createHdrWhiteColor(100.0f));
-		} else {
-			p.setColor(getRouteLineColor());
-		}
+		p.setColor(routeColor);
 		p.setStrokeWidth((float) getRouteLineWidth(tileBox));
 		p.setStrokeCap(Cap.ROUND);
 		p.setStrokeJoin(Paint.Join.ROUND);
@@ -1009,19 +1050,49 @@ public class RouteLayer extends BaseRouteLayer implements IContextMenuProvider {
 	}
 
 	private void drawIntersectingRoads(Canvas canvas, RotatedTileBox tileBox) {
+		OsmandSettings s = getApplication().getSettings();
+		int color = s.INTERSECTING_ROADS_COLOR.get();
+
+		if (s.HUD_MAP_STYLE.get() && android.os.Build.VERSION.SDK_INT >= 34) {
+			int width = tileBox.getPixWidth();
+			int height = tileBox.getPixHeight();
+			if (width > 0 && height > 0) {
+				try {
+					Bitmap baseBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+					Canvas baseCanvas = new Canvas(baseBitmap);
+					drawIntersectingRoadsInternal(baseCanvas, tileBox, color);
+
+					Bitmap gainmapBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+					Canvas gainmapCanvas = new Canvas(gainmapBitmap);
+					drawIntersectingRoadsInternal(gainmapCanvas, tileBox, Color.WHITE);
+
+					android.graphics.Gainmap gainmap = new android.graphics.Gainmap(gainmapBitmap);
+					gainmap.setDisplayRatioForFullHdr(100.0f);
+					gainmap.setRatioMax(100.0f, 100.0f, 100.0f);
+					gainmap.setRatioMin(1.0f, 1.0f, 1.0f);
+
+					baseBitmap.setGainmap(gainmap);
+
+					canvas.drawBitmap(baseBitmap, 0, 0, null);
+					return;
+				} catch (Throwable e) {
+					// Fallback
+				}
+			}
+		}
+
+		drawIntersectingRoadsInternal(canvas, tileBox, color);
+	}
+
+	private void drawIntersectingRoadsInternal(Canvas canvas, RotatedTileBox tileBox, int color) {
 		RouteCalculationResult route = helper.getRoute();
 		List<RouteSegmentResult> segments = route.getOriginalRoute();
 		if (segments == null) return;
 
 		float thickness = getApplication().getSettings().INTERSECTING_ROADS_THICKNESS.get() * getContext().getResources().getDisplayMetrics().density;
-		OsmandSettings s = getApplication().getSettings();
 		roadPaint.setStyle(Paint.Style.STROKE);
-		if (s.HUD_MAP_STYLE.get() && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-			roadPaint.setColor(createHdrWhiteColor(100.0f));
-		} else {
-			int color = getApplication().getSettings().INTERSECTING_ROADS_COLOR.get();
-			roadPaint.setColor(color);
-		}
+		roadPaint.setAntiAlias(true);
+		roadPaint.setColor(color);
 		roadPaint.setStrokeWidth(thickness);
 		roadPaint.setStrokeCap(Cap.ROUND);
 		roadPaint.setStrokeJoin(Paint.Join.ROUND);
