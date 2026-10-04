@@ -32,6 +32,37 @@ public class MapDuringNavigationFragment extends BaseSettingsFragment {
 		setupSpotlightThicknessPref();
 		setupSpotlightColorPref();
 		setupSpotlightFilterPrefs();
+		updateHudPreferencesVisibility();
+	}
+
+	private void updateHudPreferencesVisibility() {
+		boolean hudEnabled = settings.HUD_MAP_STYLE.getModeValue(getSelectedAppMode());
+		boolean spotlightEnabled = hudEnabled && settings.SPOTLIGHT_NAVIGATION.getModeValue(getSelectedAppMode());
+		boolean filterEnabled = spotlightEnabled && settings.SPOTLIGHT_FILTER_ENABLED.getModeValue(getSelectedAppMode());
+
+		Preference routeLineColorPref = findPreference(settings.HUD_ROUTE_LINE_COLOR.getId());
+		Preference spotlightPref = findPreference(settings.SPOTLIGHT_NAVIGATION.getId());
+		Preference spotlightActionPointsOnlyPref = findPreference(settings.SPOTLIGHT_ACTION_POINTS_ONLY.getId());
+		Preference radiusPref = findPreference(settings.INTERSECTING_ROADS_RADIUS.getId());
+		Preference thicknessPref = findPreference(settings.INTERSECTING_ROADS_THICKNESS.getId());
+		Preference colorPref = findPreference(settings.INTERSECTING_ROADS_COLOR.getId());
+		Preference filterEnabledPref = findPreference(settings.SPOTLIGHT_FILTER_ENABLED.getId());
+		Preference filterTracksPref = findPreference(settings.SPOTLIGHT_FILTER_TRACKS.getId());
+		Preference filterAccessPref = findPreference(settings.SPOTLIGHT_FILTER_ACCESS.getId());
+		Preference filterLocalPref = findPreference(settings.SPOTLIGHT_FILTER_LOCAL.getId());
+
+		if (routeLineColorPref != null) routeLineColorPref.setVisible(hudEnabled);
+		if (spotlightPref != null) spotlightPref.setVisible(hudEnabled);
+
+		if (spotlightActionPointsOnlyPref != null) spotlightActionPointsOnlyPref.setVisible(spotlightEnabled);
+		if (radiusPref != null) radiusPref.setVisible(spotlightEnabled);
+		if (thicknessPref != null) thicknessPref.setVisible(spotlightEnabled);
+		if (colorPref != null) colorPref.setVisible(spotlightEnabled);
+		if (filterEnabledPref != null) filterEnabledPref.setVisible(spotlightEnabled);
+
+		if (filterTracksPref != null) filterTracksPref.setVisible(filterEnabled);
+		if (filterAccessPref != null) filterAccessPref.setVisible(filterEnabled);
+		if (filterLocalPref != null) filterLocalPref.setVisible(filterEnabled);
 	}
 
 	private void setupSpotlightFilterPrefs() {
@@ -214,6 +245,12 @@ public class MapDuringNavigationFragment extends BaseSettingsFragment {
 
 	@Override
 	public void onApplyPreferenceChange(String prefId, boolean applyToAllProfiles, Object newValue) {
+		super.onApplyPreferenceChange(prefId, applyToAllProfiles, newValue);
+		if (settings.HUD_MAP_STYLE.getId().equals(prefId)
+				|| settings.SPOTLIGHT_NAVIGATION.getId().equals(prefId)
+				|| settings.SPOTLIGHT_FILTER_ENABLED.getId().equals(prefId)) {
+			updateHudPreferencesVisibility();
+		}
 		if (settings.AUTO_ZOOM_MAP.getId().equals(prefId)) {
 			if (newValue instanceof Integer) {
 				int position = (int) newValue;
@@ -225,8 +262,6 @@ public class MapDuringNavigationFragment extends BaseSettingsFragment {
 							applyToAllProfiles, AutoZoomMap.values()[position - 1]);
 				}
 			}
-		} else {
-			super.onApplyPreferenceChange(prefId, applyToAllProfiles, newValue);
 		}
 	}
 }

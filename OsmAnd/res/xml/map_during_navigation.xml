@@ -22,6 +22,7 @@
 		android:title="@string/hud_route_line_color" />
 
 	<net.osmand.plus.settings.preferences.SwitchPreferenceEx
+		android:dependency="hud_map_style"
 		android:key="spotlight_navigation"
 		android:layout="@layout/preference_dialog_and_switch"
 		android:summaryOff="@string/shared_string_off"

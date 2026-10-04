@@ -92,6 +92,40 @@ public class RouteLayer extends BaseRouteLayer implements IContextMenuProvider {
 
 	private VectorLinesCollection spotlightLinesCollection;
 
+	private Bitmap cachedRouteBaseBitmap;
+	private Bitmap cachedRouteGainmapBitmap;
+	private Canvas cachedRouteBaseCanvas;
+	private Canvas cachedRouteGainmapCanvas;
+
+	private Bitmap cachedRoadsBaseBitmap;
+	private Bitmap cachedRoadsGainmapBitmap;
+	private Canvas cachedRoadsBaseCanvas;
+	private Canvas cachedRoadsGainmapCanvas;
+
+	private void clearHdrBitmaps() {
+		if (cachedRouteBaseBitmap != null) {
+			cachedRouteBaseBitmap.recycle();
+			cachedRouteBaseBitmap = null;
+		}
+		if (cachedRouteGainmapBitmap != null) {
+			cachedRouteGainmapBitmap.recycle();
+			cachedRouteGainmapBitmap = null;
+		}
+		cachedRouteBaseCanvas = null;
+		cachedRouteGainmapCanvas = null;
+
+		if (cachedRoadsBaseBitmap != null) {
+			cachedRoadsBaseBitmap.recycle();
+			cachedRoadsBaseBitmap = null;
+		}
+		if (cachedRoadsGainmapBitmap != null) {
+			cachedRoadsGainmapBitmap.recycle();
+			cachedRoadsGainmapBitmap = null;
+		}
+		cachedRoadsBaseCanvas = null;
+		cachedRoadsGainmapCanvas = null;
+	}
+
 	private interface ConditionMatcher {
 		boolean match();
 	}
@@ -768,14 +802,16 @@ public class RouteLayer extends BaseRouteLayer implements IContextMenuProvider {
 	@Override
 	public void onDraw(Canvas canvas, RotatedTileBox tileBox, DrawSettings settings) {
 		OsmandSettings s = getApplication().getSettings();
-		if ((s.SPOTLIGHT_NAVIGATION.get() || s.HUD_MAP_STYLE.get()) && helper.isRouteCalculated()) {
+		if (s.HUD_MAP_STYLE.get() && helper.isRouteCalculated()) {
 			MapRendererView mapRenderer = getMapRenderer();
 			if (mapRenderer != null && !s.HUD_MAP_STYLE.get()) {
 				// We rely on HUD.render.xml to provide the black background and route line.
 				updateSpotlightNative(mapRenderer);
 			} else {
 				canvas.drawColor(Color.BLACK);
-				drawIntersectingRoads(canvas, tileBox);
+				if (s.SPOTLIGHT_NAVIGATION.get()) {
+					drawIntersectingRoads(canvas, tileBox);
+				}
 				drawRouteLine(canvas, tileBox);
 			}
 		} else {
@@ -984,22 +1020,30 @@ public class RouteLayer extends BaseRouteLayer implements IContextMenuProvider {
 			int height = tileBox.getPixHeight();
 			if (width > 0 && height > 0) {
 				try {
-					Bitmap baseBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-					Canvas baseCanvas = new Canvas(baseBitmap);
-					drawRouteLineInternal(baseCanvas, tileBox, routeColor);
+					if (cachedRouteBaseBitmap == null || cachedRouteBaseBitmap.getWidth() != width || cachedRouteBaseBitmap.getHeight() != height) {
+						if (cachedRouteBaseBitmap != null) cachedRouteBaseBitmap.recycle();
+						if (cachedRouteGainmapBitmap != null) cachedRouteGainmapBitmap.recycle();
 
-					Bitmap gainmapBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-					Canvas gainmapCanvas = new Canvas(gainmapBitmap);
-					drawRouteLineInternal(gainmapCanvas, tileBox, Color.WHITE);
+						cachedRouteBaseBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+						cachedRouteGainmapBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+						cachedRouteBaseCanvas = new Canvas(cachedRouteBaseBitmap);
+						cachedRouteGainmapCanvas = new Canvas(cachedRouteGainmapBitmap);
+					} else {
+						cachedRouteBaseBitmap.eraseColor(0);
+						cachedRouteGainmapBitmap.eraseColor(0);
+					}
 
-					android.graphics.Gainmap gainmap = new android.graphics.Gainmap(gainmapBitmap);
+					drawRouteLineInternal(cachedRouteBaseCanvas, tileBox, routeColor);
+					drawRouteLineInternal(cachedRouteGainmapCanvas, tileBox, Color.WHITE);
+
+					android.graphics.Gainmap gainmap = new android.graphics.Gainmap(cachedRouteGainmapBitmap);
 					gainmap.setDisplayRatioForFullHdr(100.0f);
 					gainmap.setRatioMax(100.0f, 100.0f, 100.0f);
 					gainmap.setRatioMin(1.0f, 1.0f, 1.0f);
 
-					baseBitmap.setGainmap(gainmap);
+					cachedRouteBaseBitmap.setGainmap(gainmap);
 
-					canvas.drawBitmap(baseBitmap, 0, 0, null);
+					canvas.drawBitmap(cachedRouteBaseBitmap, 0, 0, null);
 					return;
 				} catch (Throwable e) {
 					// Fallback
@@ -1058,22 +1102,30 @@ public class RouteLayer extends BaseRouteLayer implements IContextMenuProvider {
 			int height = tileBox.getPixHeight();
 			if (width > 0 && height > 0) {
 				try {
-					Bitmap baseBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-					Canvas baseCanvas = new Canvas(baseBitmap);
-					drawIntersectingRoadsInternal(baseCanvas, tileBox, color);
+					if (cachedRoadsBaseBitmap == null || cachedRoadsBaseBitmap.getWidth() != width || cachedRoadsBaseBitmap.getHeight() != height) {
+						if (cachedRoadsBaseBitmap != null) cachedRoadsBaseBitmap.recycle();
+						if (cachedRoadsGainmapBitmap != null) cachedRoadsGainmapBitmap.recycle();
 
-					Bitmap gainmapBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-					Canvas gainmapCanvas = new Canvas(gainmapBitmap);
-					drawIntersectingRoadsInternal(gainmapCanvas, tileBox, Color.WHITE);
+						cachedRoadsBaseBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+						cachedRoadsGainmapBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+						cachedRoadsBaseCanvas = new Canvas(cachedRoadsBaseBitmap);
+						cachedRoadsGainmapCanvas = new Canvas(cachedRoadsGainmapBitmap);
+					} else {
+						cachedRoadsBaseBitmap.eraseColor(0);
+						cachedRoadsGainmapBitmap.eraseColor(0);
+					}
 
-					android.graphics.Gainmap gainmap = new android.graphics.Gainmap(gainmapBitmap);
+					drawIntersectingRoadsInternal(cachedRoadsBaseCanvas, tileBox, color);
+					drawIntersectingRoadsInternal(cachedRoadsGainmapCanvas, tileBox, Color.WHITE);
+
+					android.graphics.Gainmap gainmap = new android.graphics.Gainmap(cachedRoadsGainmapBitmap);
 					gainmap.setDisplayRatioForFullHdr(100.0f);
 					gainmap.setRatioMax(100.0f, 100.0f, 100.0f);
 					gainmap.setRatioMin(1.0f, 1.0f, 1.0f);
 
-					baseBitmap.setGainmap(gainmap);
+					cachedRoadsBaseBitmap.setGainmap(gainmap);
 
-					canvas.drawBitmap(baseBitmap, 0, 0, null);
+					canvas.drawBitmap(cachedRoadsBaseBitmap, 0, 0, null);
 					return;
 				} catch (Throwable e) {
 					// Fallback
@@ -1305,6 +1357,7 @@ public class RouteLayer extends BaseRouteLayer implements IContextMenuProvider {
 	@Override
 	protected void cleanupResources() {
 		super.cleanupResources();
+		clearHdrBitmaps();
 		resetLayer();
 	}
 
