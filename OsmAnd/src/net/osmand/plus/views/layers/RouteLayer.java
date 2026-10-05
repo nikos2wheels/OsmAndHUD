@@ -802,16 +802,12 @@ public class RouteLayer extends BaseRouteLayer implements IContextMenuProvider {
 	@Override
 	public void onDraw(Canvas canvas, RotatedTileBox tileBox, DrawSettings settings) {
 		OsmandSettings s = getApplication().getSettings();
-		if (s.HUD_MAP_STYLE.get() && helper.isRouteCalculated()) {
-			MapRendererView mapRenderer = getMapRenderer();
-			if (mapRenderer != null && !s.HUD_MAP_STYLE.get()) {
-				// We rely on HUD.render.xml to provide the black background and route line.
-				updateSpotlightNative(mapRenderer);
-			} else {
-				canvas.drawColor(Color.BLACK);
-				if (s.SPOTLIGHT_NAVIGATION.get()) {
-					drawIntersectingRoads(canvas, tileBox);
-				}
+		if (s.HUD_MAP_STYLE.get()) {
+			canvas.drawColor(Color.BLACK);
+			if (s.SPOTLIGHT_NAVIGATION.get()) {
+				drawIntersectingRoads(canvas, tileBox);
+			}
+			if (helper.isRouteCalculated()) {
 				drawRouteLine(canvas, tileBox);
 			}
 		} else {
@@ -1136,10 +1132,112 @@ public class RouteLayer extends BaseRouteLayer implements IContextMenuProvider {
 		drawIntersectingRoadsInternal(canvas, tileBox, color);
 	}
 
+	private boolean isRoadObject(net.osmand.binary.BinaryMapDataObject obj) {
+		if (obj.isArea()) return false;
+		if (obj.getMapIndex() == null) return true;
+
+		int[] types = obj.getTypes();
+		if (types == null) return false;
+
+		boolean isHighway = false;
+		for (int type : types) {
+			net.osmand.binary.BinaryMapIndexReader.TagValuePair pair = obj.getMapIndex().decodeType(type);
+			if (pair != null && "highway".equals(pair.tag)) {
+				String val = pair.value;
+				if (val != null) {
+					if ("footway".equals(val) || "cycleway".equals(val) || "path".equals(val) 
+							|| "pedestrian".equals(val) || "steps".equals(val) || "bridleway".equals(val)
+							|| "service".equals(val) || "track".equals(val) || "construction".equals(val)
+							|| "proposed".equals(val) || "bus_stop".equals(val) || "platform".equals(val)
+							|| "residential".equals(val) || "living_street".equals(val)) {
+						return false;
+					}
+				}
+				isHighway = true;
+			}
+		}
+		return isHighway;
+	}
+
+	private void drawNearbyRoadsInternal(Canvas canvas, RotatedTileBox tileBox) {
+		if (helper.isRouteBeingCalculated()) {
+			return;
+		}
+
+		float thickness = 5.0f;
+		roadPaint.setStyle(Paint.Style.STROKE);
+		roadPaint.setAntiAlias(true);
+		roadPaint.setColor(Color.WHITE);
+		roadPaint.setStrokeWidth(thickness);
+		roadPaint.setStrokeCap(Cap.ROUND);
+		roadPaint.setStrokeJoin(Paint.Join.ROUND);
+
+		int zoom = tileBox.getZoom();
+		if (zoom < 10) return;
+
+		net.osmand.data.QuadRect bounds = tileBox.getLatLonBounds();
+		if (bounds == null) return;
+
+		int leftX = net.osmand.util.MapUtils.get31TileNumberX(bounds.left);
+		int rightX = net.osmand.util.MapUtils.get31TileNumberX(bounds.right);
+		int topY = net.osmand.util.MapUtils.get31TileNumberY(bounds.top);
+		int bottomY = net.osmand.util.MapUtils.get31TileNumberY(bounds.bottom);
+
+		net.osmand.binary.BinaryMapIndexReader.SearchRequest<net.osmand.binary.BinaryMapDataObject> req = 
+				net.osmand.binary.BinaryMapIndexReader.buildSearchRequest(leftX, rightX, topY, bottomY, zoom, null);
+
+		List<net.osmand.binary.BinaryMapDataObject> result = new ArrayList<>();
+		net.osmand.binary.BinaryMapIndexReader[] routingFiles = getApplication().getResourceManager().getRoutingMapFiles();
+		if (routingFiles != null) {
+			for (net.osmand.binary.BinaryMapIndexReader mainReader : routingFiles) {
+				try {
+					mainReader.searchMapIndex(req);
+					if (req.getSearchResults() != null) {
+						result.addAll(req.getSearchResults());
+					}
+				} catch (Exception e) {
+					// Ignore
+				}
+			}
+		}
+
+		java.util.Set<Long> processedIds = new java.util.HashSet<>();
+		Path path = new Path();
+		for (net.osmand.binary.BinaryMapDataObject obj : result) {
+			if (!isRoadObject(obj)) continue;
+
+			long id = obj.getId();
+			if (id != 0 && !processedIds.add(id)) {
+				continue;
+			}
+
+			int len = obj.getPointsLength();
+			if (len < 2) continue;
+
+			boolean first = true;
+			for (int i = 0; i < len; i++) {
+				double lat = net.osmand.util.MapUtils.get31LatitudeY(obj.getPoint31YTile(i));
+				double lon = net.osmand.util.MapUtils.get31LongitudeX(obj.getPoint31XTile(i));
+				float x = tileBox.getPixXFromLatLon(lat, lon);
+				float y = tileBox.getPixYFromLatLon(lat, lon);
+				if (first) {
+					path.moveTo(x, y);
+					first = false;
+				} else {
+					path.lineTo(x, y);
+				}
+			}
+		}
+		canvas.drawPath(path, roadPaint);
+	}
+
 	private void drawIntersectingRoadsInternal(Canvas canvas, RotatedTileBox tileBox, int color) {
 		RouteCalculationResult route = helper.getRoute();
-		List<RouteSegmentResult> segments = route.getOriginalRoute();
-		if (segments == null) return;
+		List<RouteSegmentResult> segments = route != null ? route.getOriginalRoute() : null;
+		if (segments == null || segments.isEmpty()) {
+			drawNearbyRoadsInternal(canvas, tileBox);
+			return;
+		}
 
 		float thickness = getApplication().getSettings().INTERSECTING_ROADS_THICKNESS.get() * getContext().getResources().getDisplayMetrics().density;
 		roadPaint.setStyle(Paint.Style.STROKE);

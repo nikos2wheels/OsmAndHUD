@@ -270,7 +270,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		settings.SPOTLIGHT_FILTER_ACCESS.addListener(spotlightSettingsListener);
 		settings.SPOTLIGHT_FILTER_LOCAL.addListener(spotlightSettingsListener);
 
-		updateHdrWindowMode();
+		checkHudStyle();
 
 		setContentView(R.layout.main);
 		enterToFullScreen();
@@ -635,6 +635,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 	@Override
 	protected void onResume() {
 		super.onResume();
+		checkHudStyle();
 		MapActivity mapViewMapActivity = getMapView().getMapActivity();
 		if (activityRestartNeeded || !getMapLayers().hasMapActivity()
 				|| (mapViewMapActivity != null && mapViewMapActivity != this)) {
@@ -1845,14 +1846,23 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 					? android.content.pm.ActivityInfo.COLOR_MODE_HDR 
 					: android.content.pm.ActivityInfo.COLOR_MODE_DEFAULT;
 			
-			if (getWindow().getColorMode() != targetColorMode) {
-				getWindow().setColorMode(targetColorMode);
-			}
+			WindowManager.LayoutParams lp = getWindow().getAttributes();
+			lp.setColorMode(targetColorMode);
+			getWindow().setAttributes(lp);
+			getWindow().setColorMode(targetColorMode);
 
 			if (android.os.Build.VERSION.SDK_INT >= 34) {
 				float targetHeadroom = isHudMode ? 100.0f : 1.0f;
 				getWindow().setDesiredHdrHeadroom(targetHeadroom);
 			}
+		}
+	}
+
+	@Override
+	public void onWindowFocusChanged(boolean hasFocus) {
+		super.onWindowFocusChanged(hasFocus);
+		if (hasFocus) {
+			checkHudStyle();
 		}
 	}
 
