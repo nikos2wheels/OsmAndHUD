@@ -802,7 +802,7 @@ public class RouteLayer extends BaseRouteLayer implements IContextMenuProvider {
 	@Override
 	public void onDraw(Canvas canvas, RotatedTileBox tileBox, DrawSettings settings) {
 		OsmandSettings s = getApplication().getSettings();
-		if (s.HUD_MAP_STYLE.get()) {
+		if (s.HUD_MAP_STYLE.get() && !helper.isRoutePlanningMode()) {
 			canvas.drawColor(Color.BLACK);
 			if (s.SPOTLIGHT_NAVIGATION.get()) {
 				drawIntersectingRoads(canvas, tileBox);

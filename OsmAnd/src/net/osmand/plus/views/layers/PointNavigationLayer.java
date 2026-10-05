@@ -124,7 +124,9 @@ public class PointNavigationLayer extends OsmandMapLayer implements
 		}
 		TargetPoint pointToStart = targetPoints.getPointToStart();
 		if (pointToStart != null) {
-			if (isLocationVisible(tb, pointToStart)) {
+			boolean isMyLocation = pointToStart.getOriginalPointDescription() != null 
+					&& pointToStart.getOriginalPointDescription().isMyLocation();
+			if (!isMyLocation && isLocationVisible(tb, pointToStart)) {
 				drawStartPoint(canvas, tb, pointToStart);
 			}
 		}

@@ -40,32 +40,25 @@ object GoogleMapsIntentHandler {
                 val destName = route.destinationRaw ?: "Shared Destination"
                 val point = PointDescription(PointDescription.POINT_TYPE_LOCATION, destName)
                 
-                // Set the destination in the helper
+                // 1. Set destination point
                 targets.navigateToPoint(latLon, true, -1, point)
 
-                // 2. Resolve and set Origin (From)
+                // 2. Resolve and set Origin if present
                 val origin = route.origin
                 if (origin != null) {
                     val origLatLon = LatLon(origin.latitude, origin.longitude)
                     val origName = route.originRaw ?: "Shared Origin"
                     val origPoint = PointDescription(PointDescription.POINT_TYPE_LOCATION, origName)
-                    
-                    // Set the start point in the helper
                     targets.setStartPoint(origLatLon, true, origPoint)
-                    
-                    // Trigger route calculation
-                    targets.updateRouteAndRefresh(true)
-
-                    // Both points set: Enter Route Planning mode using existing points
-                    // Passing '2' for menuState (MenuState.HALF_SCREEN) to dock at bottom
-                    activity.getMapActions().enterRoutePlanningModeGivenGpx(null, null, null, null, true, true, 2)
-                } else {
-                    // Single destination: Center map and show context menu
-                    val mapView = activity.getMapView()
-                    mapView.setLatLon(destination.latitude, destination.longitude)
-                    mapView.setIntZoom(16)
-                    activity.contextMenu.show(latLon, point, null)
                 }
+
+                // 3. Center map on destination
+                val mapView = activity.getMapView()
+                mapView.setLatLon(destination.latitude, destination.longitude)
+                mapView.setIntZoom(16)
+
+                // 4. Enter Route Planning / Navigation Preparation Mode
+                activity.getMapActions().enterRoutePlanningMode(null, null)
             }
         }
     }

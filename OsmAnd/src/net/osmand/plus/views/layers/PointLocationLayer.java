@@ -623,7 +623,7 @@ public class PointLocationLayer extends OsmandMapLayer
 			}
 			
 			OsmandSettings s = getApplication().getSettings();
-			boolean isHudMode = s.HUD_MAP_STYLE.get();
+			boolean isHudMode = s.HUD_MAP_STYLE.get() && !getApplication().getRoutingHelper().isRoutePlanningMode();
 
 			LayerDrawable iconToDraw = navigationIcon != null ? navigationIcon : locationIcon;
 			if (iconToDraw == null) {
